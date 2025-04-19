@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}خدمات - کلینیک زیبایی{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero" style="padding: 4rem 0;">
+    <div class="container text-center">
+        <h1 data-aos="fade-up">خدمات کلینیک زیبایی</h1>
+        <p class="lead" data-aos="fade-up" data-aos-delay="100">با انواع خدمات تخصصی ما آشنا شوید</p>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            {% for service in services %}
+            <div class="col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 % 300 }}">
+                <div class="card h-100">
+                    {% if service.image_url %}
+                    <img src="{{ service.image_url }}" class="card-img-top" alt="{{ service.name }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="text-center pt-4">
+                        <i class="fas fa-spa service-icon"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ service.name }}</h5>
+                        <p class="card-text">{{ service.short_description }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('main.service_detail', service_id=service.id) }}" class="btn btn-outline-primary">اطلاعات بیشتر</a>
+                            <span class="price-tag">{{ "{:,}".format(service.price) }} تومان</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 data-aos="fade-up">دسته‌بندی خدمات</h2>
+            <p class="lead" data-aos="fade-up" data-aos-delay="100">خدمات ما در دسته‌بندی‌های مختلف</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4" data-aos="fade-up">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-laser-pointer fa-2x"></i>
+                        </div>
+                        <h4>لیزر</h4>
+                        <p>انواع خدمات لیزر از جمله لیزر موهای زائد، لیزر جوانسازی و رفع لک و جوش با پیشرفته‌ترین دستگاه‌ها</p>
+                        <a href="{{ url_for('main.services') }}#laser" class="btn btn-outline-primary">مشاهده خدمات لیزر</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-syringe fa-2x"></i>
+                        </div>
+                        <h4>تزریقات زیبایی</h4>
+                        <p>انواع تزریقات زیبایی از جمله بوتاکس، فیلر، مزوتراپی و پلاسماجت برای زیبایی و جوانسازی پوست</p>
+                        <a href="{{ url_for('main.services') }}#injection" class="btn btn-outline-primary">مشاهده خدمات تزریقی</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-seedling fa-2x"></i>
+                        </div>
+                        <h4>مراقبت‌های پوست</h4>
+                        <p>انواع خدمات مراقبتی پوست از جمله فیشیال، پاکسازی، میکرودرم، کربوکسی تراپی و ماساژ صورت</p>
+                        <a href="{{ url_for('main.services') }}#skin" class="btn btn-outline-primary">مشاهده خدمات پوست</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 data-aos="fade-up">چرا کلینیک ما را انتخاب کنید؟</h2>
+            <p class="lead" data-aos="fade-up" data-aos-delay="100">مزایای دریافت خدمات در کلینیک ما</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-4" data-aos="fade-right">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>پزشکان متخصص</h4>
+                        <p>بهره‌مندی از تیم پزشکی مجرب و متخصص با سال‌ها تجربه در زمینه پوست، مو و زیبایی</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4" data-aos="fade-left">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>کیفیت بالای خدمات</h4>
+                        <p>ارائه خدمات با بالاترین کیفیت و استفاده از بهترین محصولات و تجهیزات</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4" data-aos="fade-right">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="fas fa-sync-alt"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>تجهیزات پیشرفته</h4>
+                        <p>استفاده از جدیدترین و پیشرفته‌ترین دستگاه‌ها و تکنولوژی‌های روز دنیا</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4" data-aos="fade-left">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>پیگیری نتایج</h4>
+                        <p>پیگیری مستمر نتایج درمان و ارائه مشاوره‌های لازم برای حصول بهترین نتیجه</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 data-aos="fade-up">سوالات متداول</h2>
+            <p class="lead" data-aos="fade-up" data-aos-delay="100">پاسخ به سوالات رایج شما</p>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item" data-aos="fade-up">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                آیا خدمات کلینیک شما دارای گارانتی است؟
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                بله، اکثر خدمات ما دارای گارانتی هستند. جزئیات گارانتی هر خدمت متفاوت است و در زمان مشاوره به طور کامل توضیح داده می‌شود.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item" data-aos="fade-up" data-aos-delay="100">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                آیا قبل از انجام خدمات نیاز به مشاوره است؟
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                بله، برای اکثر خدمات ما ابتدا یک جلسه مشاوره با پزشک متخصص انجام می‌شود تا بهترین روش درمانی متناسب با شرایط شما تعیین گردد.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item" data-aos="fade-up" data-aos-delay="200">
+                        <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                آیا امکان پرداخت اقساطی وجود دارد؟
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                بله، برای برخی از خدمات امکان پرداخت اقساطی وجود دارد. برای اطلاعات بیشتر با پذیرش کلینیک تماس بگیرید.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item" data-aos="fade-up" data-aos-delay="300">
+                        <h2 class="accordion-header" id="headingFour">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                آیا خدمات شما دارای عوارض جانبی است؟
+                            </button>
+                        </h2>
+                        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                هر روش درمانی ممکن است عوارض جانبی خاص خود را داشته باشد. در جلسه مشاوره، پزشک متخصص تمامی عوارض احتمالی را برای شما توضیح می‌دهد و راه‌های کاهش این عوارض را به شما آموزش می‌دهد.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Booking CTA -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="text-white mb-4" data-aos="fade-up">همین حالا نوبت خود را رزرو کنید</h2>
+        <p class="lead mb-4" data-aos="fade-up" data-aos-delay="100">برای دریافت بهترین خدمات زیبایی، همین امروز اقدام کنید</p>
+        <a href="{{ url_for('main.booking') }}" class="btn btn-light btn-lg" data-aos="fade-up" data-aos-delay="200">رزرو نوبت</a>
+    </div>
+</section>
+{% endblock %}

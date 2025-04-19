@@ -1,0 +1,535 @@
+{% extends "base.html" %}
+
+{% block title %}رزرو نوبت - کلینیک زیبایی{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+<style>
+    .booking-steps {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        margin-bottom: 3rem;
+    }
+    
+    .booking-steps::before {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #e1e1e1;
+        z-index: 1;
+    }
+    
+    .booking-step {
+        position: relative;
+        text-align: center;
+        z-index: 2;
+    }
+    
+    .step-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        background-color: #e1e1e1;
+        color: #333;
+        border-radius: 50%;
+        margin: 0 auto 10px;
+    }
+    
+    .booking-step.active .step-number {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .booking-step.completed .step-number {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .step-content {
+        display: none;
+    }
+    
+    .step-content[data-step="1"] {
+        display: block;
+    }
+    
+    /* Time slots */
+    .time-slot-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .time-slot {
+        padding: 10px;
+        border: 1px solid #e1e1e1;
+        border-radius: 5px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .time-slot:hover {
+        border-color: var(--primary-color);
+        background-color: var(--primary-light);
+    }
+    
+    .time-slot.selected {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+    
+    /* Price summary */
+    .price-summary {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero" style="padding: 4rem 0;">
+    <div class="container text-center">
+        <h1 data-aos="fade-up">رزرو نوبت</h1>
+        <p class="lead" data-aos="fade-up" data-aos-delay="100">برای دریافت خدمات ما، نوبت خود را رزرو کنید</p>
+    </div>
+</section>
+
+<!-- Booking Form -->
+<section class="py-5">
+    <div class="container">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <form id="bookingForm" action="{{ url_for('main.booking') }}" method="POST">
+                    <!-- Booking Steps -->
+                    <div class="booking-steps">
+                        <div class="booking-step active" data-step="1">
+                            <div class="step-number">1</div>
+                            <div class="step-title">انتخاب خدمت</div>
+                        </div>
+                        <div class="booking-step" data-step="2">
+                            <div class="step-number">2</div>
+                            <div class="step-title">انتخاب پزشک</div>
+                        </div>
+                        <div class="booking-step" data-step="3">
+                            <div class="step-number">3</div>
+                            <div class="step-title">انتخاب زمان</div>
+                        </div>
+                        <div class="booking-step" data-step="4">
+                            <div class="step-number">4</div>
+                            <div class="step-title">تأیید نهایی</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 1: Service Selection -->
+                    <div class="step-content" data-step="1">
+                        <h4 class="mb-4">انتخاب خدمت</h4>
+                        <div class="mb-4">
+                            <label for="service" class="form-label">خدمت مورد نظر را انتخاب کنید</label>
+                            <select class="form-select" id="service" name="service_id" required>
+                                <option value="">انتخاب خدمت</option>
+                                {% for service in services %}
+                                <option value="{{ service.id }}" data-price="{{ service.price }}">{{ service.name }} ({{ "{:,}".format(service.price) }} تومان)</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">لطفاً یک خدمت را انتخاب کنید</div>
+                        </div>
+                        
+                        <div id="serviceDescription" class="mb-4 p-3 bg-light rounded d-none">
+                            <h5 class="service-name mb-2"></h5>
+                            <p class="service-desc mb-2"></p>
+                            <div class="d-flex justify-content-between">
+                                <span>قیمت:</span>
+                                <span class="service-price fw-bold"></span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>مدت زمان:</span>
+                                <span class="service-duration"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-primary next-step" data-current-step="1">
+                                مرحله بعد <i class="fas fa-arrow-left ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Doctor Selection -->
+                    <div class="step-content" data-step="2">
+                        <h4 class="mb-4">انتخاب پزشک</h4>
+                        <div class="mb-4">
+                            <label for="doctor" class="form-label">پزشک مورد نظر را انتخاب کنید</label>
+                            <select class="form-select" id="doctor" name="doctor_id" required disabled>
+                                <option value="">ابتدا خدمت را انتخاب کنید</option>
+                            </select>
+                            <div class="invalid-feedback">لطفاً یک پزشک را انتخاب کنید</div>
+                        </div>
+                        
+                        <div id="doctorInfo" class="mb-4 p-3 bg-light rounded d-none">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="doctor-image text-center">
+                                        <i class="fas fa-user-md fa-4x text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-9">
+                                    <h5 class="doctor-name mb-2"></h5>
+                                    <p class="doctor-speciality mb-2"></p>
+                                    <p class="doctor-bio mb-0"></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-outline-secondary prev-step me-2" data-current-step="2">
+                                <i class="fas fa-arrow-right me-2"></i> مرحله قبل
+                            </button>
+                            <button type="button" class="btn btn-primary next-step" data-current-step="2">
+                                مرحله بعد <i class="fas fa-arrow-left ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Date and Time Selection -->
+                    <div class="step-content" data-step="3">
+                        <h4 class="mb-4">انتخاب زمان</h4>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="date" class="form-label">تاریخ مورد نظر را انتخاب کنید</label>
+                                <input type="text" class="form-control" id="date" name="date" required readonly>
+                                <div class="invalid-feedback">لطفاً یک تاریخ را انتخاب کنید</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label for="time" class="form-label">زمان مورد نظر را انتخاب کنید</label>
+                                <select class="form-select" id="time" name="time" required disabled>
+                                    <option value="">ابتدا تاریخ را انتخاب کنید</option>
+                                </select>
+                                <div class="invalid-feedback">لطفاً یک زمان را انتخاب کنید</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="notes" class="form-label">توضیحات (اختیاری)</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="اگر توضیح خاصی دارید، اینجا بنویسید..."></textarea>
+                        </div>
+                        
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-outline-secondary prev-step me-2" data-current-step="3">
+                                <i class="fas fa-arrow-right me-2"></i> مرحله قبل
+                            </button>
+                            <button type="button" class="btn btn-primary next-step" data-current-step="3">
+                                مرحله بعد <i class="fas fa-arrow-left ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 4: Confirmation -->
+                    <div class="step-content" data-step="4">
+                        <h4 class="mb-4">تأیید نهایی</h4>
+                        
+                        <div class="row">
+                            <div class="col-md-8 mb-4 mb-md-0">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-4">اطلاعات نوبت</h5>
+                                        
+                                        <div class="mb-3 row">
+                                            <div class="col-5 fw-bold">خدمت:</div>
+                                            <div class="col-7" id="summaryService"></div>
+                                        </div>
+                                        
+                                        <div class="mb-3 row">
+                                            <div class="col-5 fw-bold">پزشک:</div>
+                                            <div class="col-7" id="summaryDoctor"></div>
+                                        </div>
+                                        
+                                        <div class="mb-3 row">
+                                            <div class="col-5 fw-bold">تاریخ:</div>
+                                            <div class="col-7" id="summaryDate"></div>
+                                        </div>
+                                        
+                                        <div class="mb-3 row">
+                                            <div class="col-5 fw-bold">زمان:</div>
+                                            <div class="col-7" id="summaryTime"></div>
+                                        </div>
+                                        
+                                        <div class="mb-3 row">
+                                            <div class="col-5 fw-bold">توضیحات:</div>
+                                            <div class="col-7" id="summaryNotes">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="price-summary">
+                                    <h5 class="mb-4">خلاصه پرداخت</h5>
+                                    
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span>قیمت خدمت:</span>
+                                        <span id="summaryPrice" class="fw-bold"></span>
+                                    </div>
+                                    
+                                    <hr>
+                                    
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span>مبلغ قابل پرداخت:</span>
+                                        <span id="summaryTotalPrice" class="fw-bold"></span>
+                                    </div>
+                                    
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                                        <label class="form-check-label" for="termsCheck">
+                                            <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">قوانین و مقررات</a> را مطالعه کرده و می‌پذیرم
+                                        </label>
+                                        <div class="invalid-feedback">
+                                            برای ادامه لازم است قوانین و مقررات را بپذیرید
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-outline-secondary prev-step me-2" data-current-step="4">
+                                <i class="fas fa-arrow-right me-2"></i> مرحله قبل
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-credit-card me-2"></i> پرداخت و تکمیل رزرو
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">قوانین و مقررات</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>شرایط رزرو نوبت</h6>
+                <ul>
+                    <li>لطفاً ۱۵ دقیقه قبل از زمان نوبت خود در کلینیک حضور داشته باشید.</li>
+                    <li>در صورت تأخیر بیش از ۱۵ دقیقه، ممکن است نوبت شما لغو شود.</li>
+                    <li>جهت لغو یا تغییر زمان نوبت، حداقل ۲۴ ساعت قبل اطلاع دهید.</li>
+                    <li>در صورت لغو نوبت کمتر از ۲۴ ساعت قبل از زمان نوبت، هزینه کنسلی معادل ۲۰٪ مبلغ خدمات دریافت می‌شود.</li>
+                    <li>هزینه خدمات باید قبل از شروع جلسه به صورت کامل پرداخت شود.</li>
+                </ul>
+                
+                <h6 class="mt-4">سیاست‌های بازپرداخت</h6>
+                <ul>
+                    <li>در صورت لغو نوبت از طرف کلینیک، مبلغ پرداختی به صورت کامل به شما بازگردانده می‌شود.</li>
+                    <li>در صورت عدم رضایت از خدمات، مراتب را حداکثر تا ۴۸ ساعت پس از دریافت خدمات اطلاع دهید.</li>
+                </ul>
+                
+                <h6 class="mt-4">توصیه‌های مهم</h6>
+                <ul>
+                    <li>قبل از مراجعه، توصیه‌های پزشکی مربوط به خدمت مورد نظر را مطالعه کنید.</li>
+                    <li>در صورت داشتن هرگونه حساسیت یا بیماری زمینه‌ای، حتماً به پزشک اطلاع دهید.</li>
+                    <li>توصیه می‌شود در جلسه اول، بدون آرایش مراجعه کنید.</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">متوجه شدم</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+<script src="{{ url_for('static', filename='js/booking-steps.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Persian datepicker
+        if ($.fn.persianDatepicker) {
+            $('#date').persianDatepicker({
+                format: 'YYYY/MM/DD',
+                minDate: new persianDate().unix(),
+                onSelect: function() {
+                    updateAvailableTimes();
+                },
+                autoClose: true,
+                toolbox: {
+                    calendarSwitch: {
+                        enabled: false
+                    }
+                }
+            });
+        }
+        
+        // Service selection change
+        const serviceSelect = document.getElementById('service');
+        const serviceDescription = document.getElementById('serviceDescription');
+        
+        serviceSelect.addEventListener('change', function() {
+            if (this.value) {
+                // Show service details
+                const selectedOption = this.options[this.selectedIndex];
+                const price = selectedOption.getAttribute('data-price');
+                
+                // Get service details via API
+                fetch(`/service/${this.value}`)
+                    .then(response => {
+                        // Mocking service details for now since we don't have a specific API endpoint
+                        return {
+                            name: selectedOption.textContent.split(' (')[0],
+                            description: "توضیحات کامل خدمت انتخاب شده",
+                            price: price,
+                            duration: "60 دقیقه"
+                        };
+                    })
+                    .then(service => {
+                        document.querySelector('.service-name').textContent = service.name;
+                        document.querySelector('.service-desc').textContent = service.description;
+                        document.querySelector('.service-price').textContent = `${new Intl.NumberFormat('fa-IR').format(service.price)} تومان`;
+                        document.querySelector('.service-duration').textContent = service.duration;
+                        
+                        serviceDescription.classList.remove('d-none');
+                    });
+                
+                // Enable doctor selection
+                const doctorSelect = document.getElementById('doctor');
+                doctorSelect.disabled = false;
+                doctorSelect.innerHTML = '<option value="">در حال بارگذاری پزشکان...</option>';
+                
+                // Get doctors for this service
+                setTimeout(() => {
+                    // Simulating API call delay
+                    doctorSelect.innerHTML = '<option value="">انتخاب پزشک</option>';
+                    
+                    // Add doctor options based on selected service
+                    {% for doctor in doctors %}
+                    let doctorOption = document.createElement('option');
+                    doctorOption.value = "{{ doctor.id }}";
+                    doctorOption.textContent = "{{ doctor.name }} - {{ doctor.title }}";
+                    doctorOption.setAttribute('data-speciality', "{{ doctor.title }}");
+                    doctorOption.setAttribute('data-bio', "{{ doctor.bio|truncate(100) }}");
+                    doctorSelect.appendChild(doctorOption);
+                    {% endfor %}
+                }, 500);
+            } else {
+                serviceDescription.classList.add('d-none');
+                
+                // Disable doctor selection
+                const doctorSelect = document.getElementById('doctor');
+                doctorSelect.disabled = true;
+                doctorSelect.innerHTML = '<option value="">ابتدا خدمت را انتخاب کنید</option>';
+            }
+        });
+        
+        // Doctor selection change
+        const doctorSelect = document.getElementById('doctor');
+        const doctorInfo = document.getElementById('doctorInfo');
+        
+        doctorSelect.addEventListener('change', function() {
+            if (this.value) {
+                // Show doctor details
+                const selectedOption = this.options[this.selectedIndex];
+                const speciality = selectedOption.getAttribute('data-speciality');
+                const bio = selectedOption.getAttribute('data-bio');
+                
+                document.querySelector('.doctor-name').textContent = selectedOption.textContent;
+                document.querySelector('.doctor-speciality').textContent = speciality;
+                document.querySelector('.doctor-bio').textContent = bio;
+                
+                doctorInfo.classList.remove('d-none');
+            } else {
+                doctorInfo.classList.add('d-none');
+            }
+        });
+        
+        // Update summary on step 4
+        const nextButtons = document.querySelectorAll('.next-step');
+        nextButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                if (this.getAttribute('data-current-step') === '3') {
+                    // Update summary
+                    const serviceSelect = document.getElementById('service');
+                    const doctorSelect = document.getElementById('doctor');
+                    const dateInput = document.getElementById('date');
+                    const timeSelect = document.getElementById('time');
+                    const notesTextarea = document.getElementById('notes');
+                    
+                    document.getElementById('summaryService').textContent = serviceSelect.options[serviceSelect.selectedIndex].textContent.split(' (')[0];
+                    document.getElementById('summaryDoctor').textContent = doctorSelect.options[doctorSelect.selectedIndex].textContent;
+                    document.getElementById('summaryDate').textContent = dateInput.value;
+                    document.getElementById('summaryTime').textContent = timeSelect.value;
+                    document.getElementById('summaryNotes').textContent = notesTextarea.value || '-';
+                    
+                    const price = serviceSelect.options[serviceSelect.selectedIndex].getAttribute('data-price');
+                    document.getElementById('summaryPrice').textContent = `${new Intl.NumberFormat('fa-IR').format(price)} تومان`;
+                    document.getElementById('summaryTotalPrice').textContent = `${new Intl.NumberFormat('fa-IR').format(price)} تومان`;
+                }
+            });
+        });
+        
+        // Function to update available times
+        function updateAvailableTimes() {
+            const serviceId = document.getElementById('service').value;
+            const doctorId = document.getElementById('doctor').value;
+            const date = document.getElementById('date').value;
+            const timeSelect = document.getElementById('time');
+            
+            if (serviceId && doctorId && date) {
+                // Enable time selection
+                timeSelect.disabled = false;
+                timeSelect.innerHTML = '<option value="">در حال بارگذاری زمان‌ها...</option>';
+                
+                // Get available times from API
+                fetch(`/get_available_times?service_id=${serviceId}&doctor_id=${doctorId}&date=${date}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error('Error:', data.error);
+                            timeSelect.innerHTML = '<option value="">خطا در بارگذاری زمان‌ها</option>';
+                            return;
+                        }
+                        
+                        timeSelect.innerHTML = '<option value="">انتخاب زمان</option>';
+                        
+                        if (data.available_times && data.available_times.length > 0) {
+                            data.available_times.forEach(time => {
+                                const option = document.createElement('option');
+                                option.value = time;
+                                option.textContent = time;
+                                timeSelect.appendChild(option);
+                            });
+                        } else {
+                            timeSelect.innerHTML = '<option value="">زمان خالی برای این تاریخ وجود ندارد</option>';
+                            timeSelect.disabled = true;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        timeSelect.innerHTML = '<option value="">خطا در بارگذاری زمان‌ها</option>';
+                    });
+            } else {
+                // Disable time selection
+                timeSelect.disabled = true;
+                timeSelect.innerHTML = '<option value="">ابتدا خدمت، پزشک و تاریخ را انتخاب کنید</option>';
+            }
+        }
+    });
+</script>
+{% endblock %}

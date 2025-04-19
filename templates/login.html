@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}ورود - کلینیک زیبایی{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero" style="padding: 4rem 0;">
+    <div class="container text-center">
+        <h1 data-aos="fade-up">ورود به حساب کاربری</h1>
+        <p class="lead" data-aos="fade-up" data-aos-delay="100">برای دسترسی به خدمات ویژه وارد حساب کاربری خود شوید</p>
+    </div>
+</section>
+
+<!-- Login Form -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5">
+                <div class="card shadow">
+                    <div class="card-body p-4">
+                        <ul class="nav nav-tabs mb-4" id="loginTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="password-tab" data-bs-toggle="tab" data-bs-target="#password-pane" type="button" role="tab" aria-controls="password-pane" aria-selected="true">ورود با رمز عبور</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="otp-tab" data-bs-toggle="tab" data-bs-target="#otp-pane" type="button" role="tab" aria-controls="otp-pane" aria-selected="false">ورود با رمز یکبار مصرف</button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="loginTabsContent">
+                            <!-- Password Login -->
+                            <div class="tab-pane fade show active" id="password-pane" role="tabpanel" aria-labelledby="password-tab">
+                                <form action="{{ url_for('auth.login') }}" method="POST">
+                                    <input type="hidden" name="login_method" value="password">
+                                    
+                                    <div class="mb-3">
+                                        <label for="identifier" class="form-label">شماره تلفن یا ایمیل</label>
+                                        <input type="text" class="form-control" id="identifier" name="identifier" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label">رمز عبور</label>
+                                        <input type="password" class="form-control" id="password" name="password" required>
+                                    </div>
+                                    
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="rememberMe" name="remember_me">
+                                        <label class="form-check-label" for="rememberMe">مرا به خاطر بسپار</label>
+                                    </div>
+                                    
+                                    <div class="mb-3 text-end">
+                                        <a href="#" class="text-decoration-none">رمز عبور خود را فراموش کرده‌اید؟</a>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary">ورود</button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <!-- OTP Login -->
+                            <div class="tab-pane fade" id="otp-pane" role="tabpanel" aria-labelledby="otp-tab">
+                                <form action="{{ url_for('auth.login') }}" method="POST">
+                                    <input type="hidden" name="login_method" value="otp">
+                                    
+                                    <div class="mb-3">
+                                        <label for="phone" class="form-label">شماره تلفن</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">+98</span>
+                                            <input type="tel" class="form-control" id="phone" name="phone" placeholder="9123456789" required>
+                                        </div>
+                                        <small class="form-text text-muted">کد تایید به این شماره ارسال خواهد شد.</small>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary">دریافت کد تایید</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="text-center">
+                            <p class="mb-3">یا ورود با:</p>
+                            <a href="{{ url_for('auth.google_login') }}" class="btn btn-outline-danger w-100">
+                                <i class="fab fa-google me-2"></i> ورود با حساب گوگل
+                            </a>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <p class="mb-0">حساب کاربری ندارید؟ <a href="{{ url_for('auth.register') }}" class="text-decoration-none">ثبت نام کنید</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

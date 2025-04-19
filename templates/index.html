@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}کلینیک زیبایی - خدمات تخصصی پوست، مو و زیبایی{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6" data-aos="fade-left">
+                <h1>به کلینیک زیبایی ما خوش آمدید</h1>
+                <p>با بهره‌گیری از تجهیزات مدرن و کادر مجرب، بهترین خدمات زیبایی را تجربه کنید</p>
+                <div class="mt-4">
+                    <a href="{{ url_for('main.booking') }}" class="btn btn-primary me-2 mb-2">رزرو نوبت</a>
+                    <a href="{{ url_for('main.services') }}" class="btn btn-outline-light mb-2">مشاهده خدمات</a>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block" data-aos="fade-right">
+                <svg width="100%" height="400" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M259.7,66.8c38.5-9.9,60.4,19.3,94.4,34.4c32,14.2,80.1,12.8,97.8,44.4c19.7,35.2-15.2,75.8-17.7,115.9
+                        c-2.2,36.2,22.8,86.6-11.6,107.4c-37.3,22.5-78.3-26.5-122-27.9c-39.1-1.3-69.9,35.9-107.6,15.4c-34.7-18.8-59.9-62-55.2-102.2
+                        c4.3-36.7,39.5-58.5,56.5-91.6C211.3,131.3,220.1,77.1,259.7,66.8z" fill="#ad8fd9"/>
+                    <circle cx="300" cy="200" r="120" fill="#8e6db5" opacity="0.3"/>
+                    <text x="230" y="200" font-family="Vazir, Tahoma, sans-serif" font-size="35" fill="white">زیبایی شما</text>
+                    <text x="280" y="240" font-family="Vazir, Tahoma, sans-serif" font-size="35" fill="white">اولویت ماست</text>
+                </svg>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2>خدمات ما</h2>
+            <p class="lead">خدمات تخصصی و متنوع ما برای زیبایی پوست و مو</p>
+        </div>
+        
+        <div class="row">
+            {% for service in services %}
+            <div class="col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                <div class="card h-100">
+                    {% if service.image_url %}
+                    <img src="{{ service.image_url }}" class="card-img-top" alt="{{ service.name }}">
+                    {% else %}
+                    <div class="text-center pt-4">
+                        <i class="fas fa-spa service-icon"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ service.name }}</h5>
+                        <p class="card-text">{{ service.short_description }}</p>
+                        <a href="{{ url_for('main.service_detail', service_id=service.id) }}" class="btn btn-outline-primary">اطلاعات بیشتر</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{{ url_for('main.services') }}" class="btn btn-primary">مشاهده همه خدمات</a>
+        </div>
+    </div>
+</section>
+
+<!-- Doctors Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2>پزشکان متخصص</h2>
+            <p class="lead">تیم پزشکی مجرب و متخصص ما</p>
+        </div>
+        
+        <div class="row">
+            {% for doctor in doctors %}
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                <div class="card h-100">
+                    {% if doctor.image_url %}
+                    <img src="{{ doctor.image_url }}" class="card-img-top doctor-img" alt="{{ doctor.name }}">
+                    {% else %}
+                    <div class="text-center pt-4">
+                        <i class="fas fa-user-md" style="font-size: 5rem; color: var(--primary-color);"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ doctor.name }}</h5>
+                        <p class="doctor-speciality">{{ doctor.title }}</p>
+                        <p class="card-text">{{ doctor.bio|truncate(100) }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{{ url_for('main.doctors') }}" class="btn btn-primary">مشاهده همه پزشکان</a>
+        </div>
+    </div>
+</section>
+
+<!-- Portfolio Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2>نمونه کارهای ما</h2>
+            <p class="lead">تعدادی از نمونه کارهای موفق ما</p>
+        </div>
+        
+        <div class="row">
+            {% for item in portfolio %}
+            <div class="col-md-4 mb-4" data-aos="zoom-in" data-aos-delay="{{ loop.index * 100 }}">
+                <div class="portfolio-item">
+                    {% if item.after_image_url %}
+                    <img src="{{ item.after_image_url }}" class="img-fluid rounded" alt="{{ item.title }}">
+                    {% else %}
+                    <div class="bg-light rounded" style="height: 250px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-images" style="font-size: 3rem; color: var(--primary-color);"></i>
+                    </div>
+                    {% endif %}
+                    <div class="portfolio-overlay">
+                        <div class="portfolio-overlay-content">
+                            <h5 class="text-white">{{ item.title }}</h5>
+                            <p>{{ item.service.name }}</p>
+                            <a href="{{ url_for('main.portfolio') }}?service_id={{ item.service_id }}" class="btn btn-sm btn-light">مشاهده بیشتر</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{{ url_for('main.portfolio') }}" class="btn btn-primary">مشاهده همه نمونه کارها</a>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2>نظرات مشتریان</h2>
+            <p class="lead">آنچه مشتریان ما درباره خدمات ما می‌گویند</p>
+        </div>
+        
+        <div class="row">
+            {% for review in reviews %}
+            <div class="col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                <div class="testimonial">
+                    <div class="testimonial-rating">
+                        {% for i in range(review.rating) %}
+                        <i class="fas fa-star"></i>
+                        {% endfor %}
+                        {% for i in range(5 - review.rating) %}
+                        <i class="far fa-star"></i>
+                        {% endfor %}
+                    </div>
+                    <p>{{ review.comment|truncate(150) }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="testimonial-author">{{ review.user.username }}</span>
+                        <small class="text-muted">
+                            {% if review.service %}
+                            {{ review.service.name }}
+                            {% else %}
+                            نظر کلی
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- News Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2>اخبار و مقالات</h2>
+            <p class="lead">آخرین اخبار و مقالات تخصصی در زمینه زیبایی و سلامت</p>
+        </div>
+        
+        <div class="row">
+            {% for item in news %}
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                <div class="card h-100">
+                    {% if item.image_url %}
+                    <img src="{{ item.image_url }}" class="card-img-top" alt="{{ item.title }}">
+                    {% else %}
+                    <div class="text-center pt-4">
+                        <i class="fas fa-newspaper" style="font-size: 3rem; color: var(--primary-color);"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.title }}</h5>
+                        <p class="card-text">{{ item.content|truncate(100) }}</p>
+                        <a href="{{ url_for('main.news_detail', news_id=item.id) }}" class="btn btn-outline-primary">ادامه مطلب</a>
+                    </div>
+                    <div class="card-footer text-muted">
+                        <small>{{ item.created_at.strftime('%Y/%m/%d') }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{{ url_for('main.news') }}" class="btn btn-primary">مشاهده همه مقالات</a>
+        </div>
+    </div>
+</section>
+
+<!-- Booking CTA -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="text-white mb-4" data-aos="fade-up">همین حالا نوبت خود را رزرو کنید</h2>
+        <p class="lead mb-4" data-aos="fade-up" data-aos-delay="100">برای دریافت بهترین خدمات زیبایی، همین امروز اقدام کنید</p>
+        <a href="{{ url_for('main.booking') }}" class="btn btn-light btn-lg" data-aos="fade-up" data-aos-delay="200">رزرو نوبت</a>
+    </div>
+</section>
+{% endblock %}

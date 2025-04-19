@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}پزشکان متخصص - کلینیک زیبایی{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero" style="padding: 4rem 0;">
+    <div class="container text-center">
+        <h1 data-aos="fade-up">پزشکان متخصص</h1>
+        <p class="lead" data-aos="fade-up" data-aos-delay="100">با تیم پزشکی مجرب و متخصص ما آشنا شوید</p>
+    </div>
+</section>
+
+<!-- Doctors Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            {% for doctor in doctors %}
+            <div class="col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 % 300 }}">
+                <div class="card h-100">
+                    {% if doctor.image_url %}
+                    <img src="{{ doctor.image_url }}" class="card-img-top doctor-img" alt="{{ doctor.name }}">
+                    {% else %}
+                    <div class="text-center pt-4">
+                        <i class="fas fa-user-md" style="font-size: 5rem; color: var(--primary-color);"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title text-center">{{ doctor.name }}</h5>
+                        <p class="doctor-speciality text-center">{{ doctor.title }}</p>
+                        
+                        <hr class="my-3">
+                        
+                        <p class="card-text">{{ doctor.bio }}</p>
+                        
+                        <div class="mt-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-briefcase me-2" style="color: var(--primary-color);"></i>
+                                <span><strong>سابقه:</strong> {% if doctor.experience_years %}{{ doctor.experience_years }} سال{% else %}متخصص با تجربه{% endif %}</span>
+                            </div>
+                            
+                            {% if doctor.education %}
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-graduation-cap me-2" style="color: var(--primary-color);"></i>
+                                <span><strong>تحصیلات:</strong> {{ doctor.education }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if doctor.certifications %}
+                            <div class="d-flex align-items-start mb-2">
+                                <i class="fas fa-certificate me-2 mt-1" style="color: var(--primary-color);"></i>
+                                <span><strong>گواهینامه‌ها:</strong> {{ doctor.certifications }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h6>تخصص‌ها:</h6>
+                            <div class="doctor-services">
+                                {% for service in doctor.services %}
+                                <span class="badge bg-light text-primary me-1 mb-1">{{ service.name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="{{ url_for('main.booking') }}" class="btn btn-primary">
+                            <i class="fas fa-calendar-plus me-2"></i> رزرو نوبت
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Our Doctors -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 data-aos="fade-up">چرا پزشکان ما را انتخاب کنید؟</h2>
+            <p class="lead" data-aos="fade-up" data-aos-delay="100">ویژگی‌های برجسته تیم پزشکی ما</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-4" data-aos="fade-left">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>تخصص و تجربه</h4>
+                        <p>پزشکان ما همگی دارای تخصص در زمینه پوست، مو و زیبایی هستند و سال‌ها تجربه در این زمینه دارند.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4" data-aos="fade-right">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>به‌روزرسانی دانش</h4>
+                        <p>پزشکان ما همواره دانش خود را به روز نگه می‌دارند و در دوره‌ها و کنفرانس‌های معتبر بین‌المللی شرکت می‌کنند.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4" data-aos="fade-left">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>گواهینامه‌های معتبر</h4>
+                        <p>پزشکان ما دارای گواهینامه‌های معتبر بین‌المللی در زمینه تخصصی خود هستند.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4" data-aos="fade-right">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>توجه به جزئیات</h4>
+                        <p>پزشکان ما با دقت و توجه به جزئیات، بهترین مسیر درمانی را برای هر فرد طراحی می‌کنند.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Doctor Quote -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h3 class="mb-4 text-white" data-aos="fade-up">سخن پزشکان ما</h3>
+                <blockquote class="blockquote" data-aos="fade-up" data-aos-delay="100">
+                    <p class="mb-4">"هدف ما در کلینیک زیبایی، ارائه بهترین خدمات با بالاترین کیفیت و استفاده از جدیدترین متدهای علمی است. ما معتقدیم که زیبایی حق هر فردی است و تلاش می‌کنیم تا با ارائه خدمات متنوع و با کیفیت، رضایت کامل مراجعین را جلب نماییم."</p>
+                    <footer class="blockquote-footer text-white-50">دکتر حمیدی، متخصص پوست و مو</footer>
+                </blockquote>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Booking CTA -->
+<section class="py-5">
+    <div class="container text-center">
+        <h2 class="mb-4" data-aos="fade-up">تیم پزشکی ما آماده ارائه خدمات به شماست</h2>
+        <p class="lead mb-4" data-aos="fade-up" data-aos-delay="100">برای مشاوره و رزرو نوبت همین امروز اقدام کنید</p>
+        <a href="{{ url_for('main.booking') }}" class="btn btn-primary btn-lg" data-aos="fade-up" data-aos-delay="200">رزرو نوبت</a>
+    </div>
+</section>
+{% endblock %}

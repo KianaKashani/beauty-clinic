@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}پنل مدیریت - کلینیک زیبایی{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero" style="padding: 3rem 0;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 data-aos="fade-left">پنل مدیریت</h1>
+                <p class="lead" data-aos="fade-left" data-aos-delay="100">مدیریت کلینیک زیبایی</p>
+            </div>
+            <nav aria-label="breadcrumb" data-aos="fade-right">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">صفحه اصلی</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">پنل مدیریت</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<!-- Admin Dashboard -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <div class="list-group">
+                    <a href="{{ url_for('admin_bp.index') }}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-tachometer-alt me-2"></i> داشبورد
+                    </a>
+                    <a href="{{ url_for('admin.usermodeview.index_view') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-users me-2"></i> کاربران
+                    </a>
+                    <a href="{{ url_for('admin.doctormodeview.index_view') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user-md me-2"></i> پزشکان
+                    </a>
+                    <a href="{{ url_for('admin.servicemodeview.index_view') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-clipboard-list me-2"></i> خدمات
+                    </a>
+                    <a href="{{ url_for('admin.appointmentmodeview.index_view') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-calendar-check me-2"></i> نوبت‌ها
+                    </a>
+                    <a href="{{ url_for('admin.reviewmodeview.index_view') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-star me-2"></i> نظرات
+                    </a>
+                    <a href="{{ url_for('admin.portfoliomodeview.index_view') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-images me-2"></i> نمونه کارها
+                    </a>
+                    <a href="{{ url_for('admin.newsmodeview.index_view') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-newspaper me-2"></i> اخبار و مقالات
+                    </a>
+                    <a href="{{ url_for('admin_bp.generate_news') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-robot me-2"></i> تولید مقاله با هوش مصنوعی
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-4 mb-md-0">
+                        <div class="admin-dashboard-card bg-primary text-white">
+                            <div class="admin-dashboard-number">{{ total_users }}</div>
+                            <div class="admin-dashboard-label">کاربران</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4 mb-md-0">
+                        <div class="admin-dashboard-card bg-success text-white">
+                            <div class="admin-dashboard-number">{{ total_appointments }}</div>
+                            <div class="admin-dashboard-label">کل نوبت‌ها</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-4 mb-md-0">
+                        <div class="admin-dashboard-card bg-warning text-dark">
+                            <div class="admin-dashboard-number">{{ pending_appointments }}</div>
+                            <div class="admin-dashboard-label">نوبت‌های در انتظار</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="admin-dashboard-card bg-info text-white">
+                            <div class="admin-dashboard-number">{{ today_appointments }}</div>
+                            <div class="admin-dashboard-label">نوبت‌های امروز</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Appointments -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">نوبت‌های اخیر</h5>
+                        <a href="{{ url_for('admin.appointmentmodeview.index_view') }}" class="btn btn-sm btn-primary">مشاهده همه</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover admin-appointments-table">
+                                <thead>
+                                    <tr>
+                                        <th>نام کاربر</th>
+                                        <th>شماره تماس</th>
+                                        <th>خدمت</th>
+                                        <th>پزشک</th>
+                                        <th>تاریخ</th>
+                                        <th>زمان</th>
+                                        <th>وضعیت</th>
+                                        <th>پرداخت</th>
+                                        <th>عملیات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if recent_appointments %}
+                                        {% for appointment in recent_appointments %}
+                                        <tr>
+                                            <td>{{ appointment.user_name }}</td>
+                                            <td dir="ltr">{{ appointment.user_phone }}</td>
+                                            <td>{{ appointment.service_name }}</td>
+                                            <td>{{ appointment.doctor_name }}</td>
+                                            <td>{{ appointment.date }}</td>
+                                            <td>{{ appointment.time }}</td>
+                                            <td>
+                                                {% if appointment.status == 'pending' %}
+                                                <span class="status-badge status-pending">در انتظار</span>
+                                                {% elif appointment.status == 'confirmed' %}
+                                                <span class="status-badge status-confirmed">تایید شده</span>
+                                                {% elif appointment.status == 'completed' %}
+                                                <span class="status-badge status-completed">انجام شده</span>
+                                                {% elif appointment.status == 'canceled' %}
+                                                <span class="status-badge status-canceled">لغو شده</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if appointment.payment_status == 'pending' %}
+                                                <span class="status-badge status-pending">پرداخت نشده</span>
+                                                {% elif appointment.payment_status == 'paid' %}
+                                                <span class="status-badge status-completed">پرداخت شده</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('admin.appointmentmodeview.edit_view', id=appointment.id) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="9" class="text-center py-4">هیچ نوبتی یافت نشد</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">دسترسی سریع</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <a href="{{ url_for('admin.doctormodeview.create_view') }}" class="btn btn-outline-primary w-100 py-3">
+                                    <i class="fas fa-user-md mb-2 d-block fa-2x"></i>
+                                    افزودن پزشک جدید
+                                </a>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <a href="{{ url_for('admin.servicemodeview.create_view') }}" class="btn btn-outline-primary w-100 py-3">
+                                    <i class="fas fa-plus-circle mb-2 d-block fa-2x"></i>
+                                    افزودن خدمت جدید
+                                </a>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <a href="{{ url_for('admin.appointmentmodeview.create_view') }}" class="btn btn-outline-primary w-100 py-3">
+                                    <i class="fas fa-calendar-plus mb-2 d-block fa-2x"></i>
+                                    ثبت نوبت جدید
+                                </a>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <a href="{{ url_for('admin.newsmodeview.create_view') }}" class="btn btn-outline-primary w-100 py-3">
+                                    <i class="fas fa-newspaper mb-2 d-block fa-2x"></i>
+                                    افزودن مقاله جدید
+                                </a>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <a href="{{ url_for('admin.portfoliomodeview.create_view') }}" class="btn btn-outline-primary w-100 py-3">
+                                    <i class="fas fa-images mb-2 d-block fa-2x"></i>
+                                    افزودن نمونه کار
+                                </a>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <a href="{{ url_for('admin_bp.generate_news') }}" class="btn btn-outline-primary w-100 py-3">
+                                    <i class="fas fa-robot mb-2 d-block fa-2x"></i>
+                                    تولید مقاله با هوش مصنوعی
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

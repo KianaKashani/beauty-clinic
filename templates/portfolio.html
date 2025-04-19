@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}نمونه کارها - کلینیک زیبایی{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero" style="padding: 4rem 0;">
+    <div class="container text-center">
+        <h1 data-aos="fade-up">نمونه کارهای ما</h1>
+        <p class="lead" data-aos="fade-up" data-aos-delay="100">نمونه‌هایی از خدمات انجام شده در کلینیک ما</p>
+    </div>
+</section>
+
+<!-- Portfolio Filter -->
+<section class="py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">فیلتر بر اساس خدمات</h5>
+                        <form action="{{ url_for('main.portfolio') }}" method="get">
+                            <div class="row g-2">
+                                <div class="col-md-8">
+                                    <select name="service_id" class="form-select">
+                                        <option value="">همه خدمات</option>
+                                        {% for service in services %}
+                                        <option value="{{ service.id }}" {% if selected_service == service.id %}selected{% endif %}>{{ service.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary w-100">اعمال فیلتر</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Portfolio Items -->
+<section class="py-5">
+    <div class="container">
+        {% if portfolio %}
+        <div class="row">
+            {% for item in portfolio %}
+            <div class="col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 % 300 }}">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.title }}</h5>
+                        <p class="text-muted">{{ item.service.name }}</p>
+                        
+                        {% if item.description %}
+                        <p>{{ item.description }}</p>
+                        {% endif %}
+                        
+                        <div class="before-after-container">
+                            <div class="before-after-image">
+                                {% if item.before_image_url %}
+                                <img src="{{ item.before_image_url }}" alt="قبل" class="img-fluid">
+                                {% else %}
+                                <div class="bg-light" style="height: 150px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-image" style="font-size: 2rem; color: var(--primary-color);"></i>
+                                </div>
+                                {% endif %}
+                                <div class="before-after-label">قبل</div>
+                            </div>
+                            <div class="before-after-image">
+                                {% if item.after_image_url %}
+                                <img src="{{ item.after_image_url }}" alt="بعد" class="img-fluid">
+                                {% else %}
+                                <div class="bg-light" style="height: 150px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-image" style="font-size: 2rem; color: var(--primary-color);"></i>
+                                </div>
+                                {% endif %}
+                                <div class="before-after-label">بعد</div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('main.service_detail', service_id=item.service_id) }}" class="btn btn-outline-primary">
+                                <i class="fas fa-info-circle me-1"></i> اطلاعات بیشتر
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-search fa-3x text-muted"></i>
+            </div>
+            <h3>نمونه کاری یافت نشد</h3>
+            <p class="lead">لطفاً فیلتر دیگری را انتخاب کنید یا همه نمونه کارها را مشاهده نمایید.</p>
+            <a href="{{ url_for('main.portfolio') }}" class="btn btn-primary mt-3">مشاهده همه نمونه کارها</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 data-aos="fade-up">نظرات مشتریان</h2>
+            <p class="lead" data-aos="fade-up" data-aos-delay="100">آنچه مشتریان ما درباره خدمات ما می‌گویند</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4" data-aos="fade-up">
+                <div class="testimonial">
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p>من از خدمات لیزر کلینیک بسیار راضی هستم. نتیجه فوق‌العاده بود و پرسنل بسیار حرفه‌ای و خوش برخورد بودند.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="testimonial-author">مریم محمدی</span>
+                        <small class="text-muted">لیزر موهای زائد</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="testimonial">
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <p>تزریق بوتاکس توسط دکتر حمیدی انجام شد و از نتیجه آن بسیار راضی هستم. محیط کلینیک بسیار تمیز و آرامش‌بخش است.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="testimonial-author">سارا رضایی</span>
+                        <small class="text-muted">تزریق بوتاکس</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="testimonial">
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                    <p>از خدمات فیشیال کلینیک استفاده کردم و پوستم حسابی شاداب و درخشان شد. از کادر مجرب کلینیک تشکر می‌کنم.</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="testimonial-author">نیلوفر کریمی</span>
+                        <small class="text-muted">فیشیال</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Booking CTA -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="text-white mb-4" data-aos="fade-up">نوبت شماست که نتایج خیره‌کننده را تجربه کنید</h2>
+        <p class="lead mb-4" data-aos="fade-up" data-aos-delay="100">برای دریافت بهترین خدمات زیبایی، همین امروز اقدام کنید</p>
+        <a href="{{ url_for('main.booking') }}" class="btn btn-light btn-lg" data-aos="fade-up" data-aos-delay="200">رزرو نوبت</a>
+    </div>
+</section>
+{% endblock %}

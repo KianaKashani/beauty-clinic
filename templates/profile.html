@@ -1,0 +1,442 @@
+{% extends "base.html" %}
+
+{% block title %}پروفایل کاربری - کلینیک زیبایی{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero" style="padding: 4rem 0;">
+    <div class="container text-center">
+        <h1 data-aos="fade-up">پروفایل کاربری</h1>
+        <p class="lead" data-aos="fade-up" data-aos-delay="100">مدیریت اطلاعات شخصی و نوبت‌های شما</p>
+    </div>
+</section>
+
+<!-- Profile Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <div class="avatar-circle mx-auto">
+                                <i class="fas fa-user-circle fa-5x text-primary"></i>
+                            </div>
+                        </div>
+                        <h5>{{ user.username }}</h5>
+                        <p class="text-muted mb-0">
+                            {% if user.phone %}
+                            <small><i class="fas fa-phone me-2"></i>{{ user.phone }}</small>
+                            {% endif %}
+                        </p>
+                        <p class="text-muted">
+                            {% if user.email %}
+                            <small><i class="fas fa-envelope me-2"></i>{{ user.email }}</small>
+                            {% endif %}
+                        </p>
+                        
+                        <hr>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('main.booking') }}" class="btn btn-primary">
+                                <i class="fas fa-calendar-plus me-2"></i> رزرو نوبت جدید
+                            </a>
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                                <i class="fas fa-user-edit me-2"></i> ویرایش پروفایل
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="list-group mt-4">
+                    <a href="#appointments" class="list-group-item list-group-item-action active" data-bs-toggle="list">
+                        <i class="fas fa-calendar-alt me-2"></i> نوبت‌های من
+                    </a>
+                    <a href="#reviews" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-star me-2"></i> نظرات من
+                    </a>
+                    <a href="#favorites" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-heart me-2"></i> علاقه‌مندی‌ها
+                    </a>
+                    <a href="#transactions" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-receipt me-2"></i> تراکنش‌ها
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <div class="tab-content">
+                    <!-- Appointments Tab -->
+                    <div class="tab-pane fade show active" id="appointments">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">نوبت‌های من</h5>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary active" data-filter="all">همه</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-filter="pending">در انتظار</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-filter="confirmed">تایید شده</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" data-filter="completed">انجام شده</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                {% if appointments %}
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>خدمت</th>
+                                                <th>پزشک</th>
+                                                <th>تاریخ</th>
+                                                <th>زمان</th>
+                                                <th>وضعیت</th>
+                                                <th>پرداخت</th>
+                                                <th>عملیات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for appointment in appointments %}
+                                            <tr class="appointment-row" data-status="{{ appointment.status }}">
+                                                <td>{{ appointment.service_name }}</td>
+                                                <td>{{ appointment.doctor_name }}</td>
+                                                <td>{{ appointment.date }}</td>
+                                                <td>{{ appointment.time }}</td>
+                                                <td>
+                                                    {% if appointment.status == 'pending' %}
+                                                    <span class="badge bg-warning text-dark">در انتظار</span>
+                                                    {% elif appointment.status == 'confirmed' %}
+                                                    <span class="badge bg-primary">تایید شده</span>
+                                                    {% elif appointment.status == 'completed' %}
+                                                    <span class="badge bg-success">انجام شده</span>
+                                                    {% elif appointment.status == 'canceled' %}
+                                                    <span class="badge bg-danger">لغو شده</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if appointment.payment_status == 'pending' %}
+                                                    <span class="badge bg-warning text-dark">پرداخت نشده</span>
+                                                    {% elif appointment.payment_status == 'paid' %}
+                                                    <span class="badge bg-success">پرداخت شده</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        {% if appointment.status == 'pending' or appointment.status == 'confirmed' %}
+                                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#cancelAppointmentModal" data-id="{{ appointment.id }}">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                        {% endif %}
+                                                        
+                                                        {% if appointment.payment_status == 'pending' %}
+                                                        <a href="{{ url_for('main.payment', appointment_id=appointment.id) }}" class="btn btn-sm btn-success">
+                                                            <i class="fas fa-credit-card"></i>
+                                                        </a>
+                                                        {% endif %}
+                                                        
+                                                        {% if appointment.status == 'completed' %}
+                                                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#reviewModal" data-appointment-id="{{ appointment.id }}">
+                                                            <i class="fas fa-star"></i>
+                                                        </button>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="text-center py-5">
+                                    <div class="mb-4">
+                                        <i class="fas fa-calendar-times fa-4x text-muted"></i>
+                                    </div>
+                                    <h4>شما هنوز نوبتی ندارید</h4>
+                                    <p>برای دریافت خدمات ما، می‌توانید همین حالا نوبت خود را رزرو کنید.</p>
+                                    <a href="{{ url_for('main.booking') }}" class="btn btn-primary mt-3">رزرو نوبت</a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reviews Tab -->
+                    <div class="tab-pane fade" id="reviews">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">نظرات من</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center py-5">
+                                    <div class="mb-4">
+                                        <i class="fas fa-star fa-4x text-muted"></i>
+                                    </div>
+                                    <h4>شما هنوز نظری ثبت نکرده‌اید</h4>
+                                    <p>پس از دریافت خدمات، می‌توانید نظر خود را درباره کیفیت خدمات ثبت کنید.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Favorites Tab -->
+                    <div class="tab-pane fade" id="favorites">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">علاقه‌مندی‌ها</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center py-5">
+                                    <div class="mb-4">
+                                        <i class="fas fa-heart fa-4x text-muted"></i>
+                                    </div>
+                                    <h4>لیست علاقه‌مندی‌های شما خالی است</h4>
+                                    <p>شما می‌توانید خدمات مورد علاقه خود را به این لیست اضافه کنید.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Transactions Tab -->
+                    <div class="tab-pane fade" id="transactions">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">تراکنش‌ها</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-center py-5">
+                                    <div class="mb-4">
+                                        <i class="fas fa-receipt fa-4x text-muted"></i>
+                                    </div>
+                                    <h4>تاریخچه تراکنش‌های شما خالی است</h4>
+                                    <p>تراکنش‌های مالی شما در این بخش نمایش داده می‌شوند.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">ویرایش پروفایل</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm" action="/update_profile" method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">نام کاربری</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">ایمیل</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">شماره تلفن</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" value="{{ user.phone }}" readonly>
+                        <small class="form-text text-muted">شماره تلفن قابل تغییر نیست.</small>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">رمز عبور فعلی (در صورت تغییر رمز)</label>
+                        <input type="password" class="form-control" id="currentPassword" name="currentPassword">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">رمز عبور جدید</label>
+                        <input type="password" class="form-control" id="newPassword" name="newPassword">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirmNewPassword" class="form-label">تکرار رمز عبور جدید</label>
+                        <input type="password" class="form-control" id="confirmNewPassword" name="confirmNewPassword">
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                        <button type="submit" class="btn btn-primary">ذخیره تغییرات</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Appointment Modal -->
+<div class="modal fade" id="cancelAppointmentModal" tabindex="-1" aria-labelledby="cancelAppointmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelAppointmentModalLabel">لغو نوبت</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>آیا از لغو این نوبت اطمینان دارید؟</p>
+                <p class="text-danger">توجه: در صورت لغو نوبت کمتر از ۲۴ ساعت قبل از زمان نوبت، هزینه کنسلی معادل ۲۰٪ مبلغ خدمات دریافت می‌شود.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                <form id="cancelAppointmentForm" action="{{ url_for('main.cancel_appointment', appointment_id=0) }}" method="POST">
+                    <button type="submit" class="btn btn-danger">لغو نوبت</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reviewModalLabel">ثبت نظر</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('main.submit_review') }}" method="POST">
+                    <input type="hidden" name="service_id" id="reviewServiceId">
+                    
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">امتیاز شما</label>
+                        <div class="rating-stars mb-2">
+                            <i class="rating-star far fa-star" data-rating="1"></i>
+                            <i class="rating-star far fa-star" data-rating="2"></i>
+                            <i class="rating-star far fa-star" data-rating="3"></i>
+                            <i class="rating-star far fa-star" data-rating="4"></i>
+                            <i class="rating-star far fa-star" data-rating="5"></i>
+                            <span class="ms-2">(<span class="rating-value">0</span> از 5)</span>
+                        </div>
+                        <input type="hidden" name="rating" id="rating" class="rating-input" value="0" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">نظر شما</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="4" required></textarea>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                        <button type="submit" class="btn btn-primary">ثبت نظر</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filter appointments
+        const filterButtons = document.querySelectorAll('[data-filter]');
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const filterValue = this.getAttribute('data-filter');
+                const appointmentRows = document.querySelectorAll('.appointment-row');
+                
+                appointmentRows.forEach(row => {
+                    if (filterValue === 'all' || row.getAttribute('data-status') === filterValue) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // Cancel appointment
+        const cancelModal = document.getElementById('cancelAppointmentModal');
+        if (cancelModal) {
+            cancelModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const appointmentId = button.getAttribute('data-id');
+                const form = document.getElementById('cancelAppointmentForm');
+                form.action = "{{ url_for('main.cancel_appointment', appointment_id=0) }}".replace('0', appointmentId);
+            });
+        }
+        
+        // Review modal
+        const reviewModal = document.getElementById('reviewModal');
+        if (reviewModal) {
+            reviewModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const appointmentId = button.getAttribute('data-appointment-id');
+                // In a real app, you would fetch the service ID associated with this appointment
+                document.getElementById('reviewServiceId').value = 1; // Placeholder
+            });
+        }
+        
+        // Rating stars functionality
+        const ratingStars = document.querySelectorAll('.rating-star');
+        const ratingInput = document.querySelector('.rating-input');
+        const ratingValue = document.querySelector('.rating-value');
+        
+        if (ratingStars.length > 0) {
+            ratingStars.forEach(star => {
+                star.addEventListener('click', function() {
+                    const rating = this.getAttribute('data-rating');
+                    ratingInput.value = rating;
+                    ratingValue.textContent = rating;
+                    
+                    // Update stars visual
+                    ratingStars.forEach((s, index) => {
+                        if (index < rating) {
+                            s.classList.remove('far');
+                            s.classList.add('fas');
+                        } else {
+                            s.classList.remove('fas');
+                            s.classList.add('far');
+                        }
+                    });
+                });
+                
+                star.addEventListener('mouseover', function() {
+                    const rating = this.getAttribute('data-rating');
+                    
+                    // Update stars on hover
+                    ratingStars.forEach((s, index) => {
+                        if (index < rating) {
+                            s.classList.remove('far');
+                            s.classList.add('fas');
+                        } else {
+                            s.classList.remove('fas');
+                            s.classList.add('far');
+                        }
+                    });
+                });
+                
+                star.addEventListener('mouseout', function() {
+                    const currentRating = ratingInput.value;
+                    
+                    // Reset stars to current rating on mouseout
+                    ratingStars.forEach((s, index) => {
+                        if (index < currentRating) {
+                            s.classList.remove('far');
+                            s.classList.add('fas');
+                        } else {
+                            s.classList.remove('fas');
+                            s.classList.add('far');
+                        }
+                    });
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

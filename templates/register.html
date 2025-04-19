@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}ثبت نام - کلینیک زیبایی{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero" style="padding: 4rem 0;">
+    <div class="container text-center">
+        <h1 data-aos="fade-up">ثبت نام در کلینیک زیبایی</h1>
+        <p class="lead" data-aos="fade-up" data-aos-delay="100">برای استفاده از خدمات ویژه، حساب کاربری بسازید</p>
+    </div>
+</section>
+
+<!-- Register Form -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card shadow">
+                    <div class="card-body p-4">
+                        <form action="{{ url_for('auth.register') }}" method="POST" class="needs-validation" novalidate>
+                            <div class="mb-3">
+                                <label for="username" class="form-label">نام و نام خانوادگی <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                                <div class="invalid-feedback">
+                                    لطفاً نام و نام خانوادگی خود را وارد کنید
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">شماره تلفن همراه <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">+98</span>
+                                    <input type="tel" class="form-control" id="phone" name="phone" placeholder="9123456789" required pattern="^9[0-9]{9}$">
+                                </div>
+                                <div class="form-text">شماره باید با 9 شروع شود (مثال: 9123456789)</div>
+                                <div class="invalid-feedback">
+                                    لطفاً شماره تلفن همراه معتبر وارد کنید
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">ایمیل (اختیاری)</label>
+                                <input type="email" class="form-control" id="email" name="email">
+                                <div class="invalid-feedback">
+                                    لطفاً ایمیل معتبر وارد کنید
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label">رمز عبور <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="password" name="password" required minlength="8">
+                                <div class="form-text">رمز عبور باید حداقل 8 کاراکتر باشد</div>
+                                <div class="invalid-feedback">
+                                    رمز عبور باید حداقل 8 کاراکتر باشد
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="password_confirm" class="form-label">تکرار رمز عبور <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="password_confirm" name="password_confirm" required>
+                                <div class="invalid-feedback">
+                                    تکرار رمز عبور با رمز عبور مطابقت ندارد
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4 form-check">
+                                <input type="checkbox" class="form-check-input" id="termsCheck" required>
+                                <label class="form-check-label" for="termsCheck">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">قوانین و مقررات</a> را مطالعه کرده و می‌پذیرم
+                                </label>
+                                <div class="invalid-feedback">
+                                    برای ثبت نام لازم است قوانین و مقررات را بپذیرید
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">ثبت نام</button>
+                            </div>
+                        </form>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="text-center">
+                            <p class="mb-3">یا ثبت نام با:</p>
+                            <a href="{{ url_for('auth.google_login') }}" class="btn btn-outline-danger w-100">
+                                <i class="fab fa-google me-2"></i> ثبت نام با حساب گوگل
+                            </a>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <p class="mb-0">قبلاً ثبت نام کرده‌اید؟ <a href="{{ url_for('auth.login') }}" class="text-decoration-none">وارد شوید</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">قوانین و مقررات</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>شرایط استفاده از خدمات</h6>
+                <p>استفاده از خدمات کلینیک زیبایی منوط به پذیرش کامل شرایط و ضوابط ذیل می‌باشد:</p>
+                <ul>
+                    <li>کلیه اطلاعات شخصی شما نزد ما محفوظ است و به هیچ عنوان در اختیار اشخاص ثالث قرار نمی‌گیرد.</li>
+                    <li>اطلاعات پزشکی شما محرمانه تلقی شده و تنها برای ارائه خدمات بهتر استفاده می‌شود.</li>
+                    <li>ثبت نوبت به منزله پذیرش شرایط کلینیک زیبایی می‌باشد.</li>
+                    <li>لازم است قوانین مربوط به لغو یا تغییر زمان نوبت را رعایت فرمایید.</li>
+                    <li>در صورت بروز هرگونه مشکل یا عارضه پس از دریافت خدمات، در اسرع وقت با کلینیک تماس حاصل فرمایید.</li>
+                </ul>
+                
+                <h6 class="mt-4">حریم خصوصی</h6>
+                <p>ما به حریم خصوصی شما احترام می‌گذاریم و متعهد هستیم که:</p>
+                <ul>
+                    <li>اطلاعات شخصی شما را تنها با هدف بهبود خدمات و تجربه کاربری نگهداری کنیم.</li>
+                    <li>از اطلاعات شما برای ارسال اطلاعیه‌های مهم و پیشنهادات ویژه استفاده کنیم (مگر اینکه تمایل نداشته باشید).</li>
+                    <li>از اقدامات امنیتی مناسب برای محافظت از اطلاعات شما استفاده کنیم.</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">متوجه شدم</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Custom validation for password matching
+        const password = document.getElementById('password');
+        const passwordConfirm = document.getElementById('password_confirm');
+        
+        function validatePasswordMatch() {
+            if (passwordConfirm.value !== password.value) {
+                passwordConfirm.setCustomValidity('رمز عبور و تکرار آن باید یکسان باشند');
+            } else {
+                passwordConfirm.setCustomValidity('');
+            }
+        }
+        
+        password.addEventListener('change', validatePasswordMatch);
+        passwordConfirm.addEventListener('keyup', validatePasswordMatch);
+        
+        // Form validation
+        const form = document.querySelector('.needs-validation');
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+    });
+</script>
+{% endblock %}
