@@ -53,6 +53,7 @@ def generate_unique_code(length=6):
 def validate_phone_number(phone):
     """Validate Iranian phone number format"""
     # Iranian mobile number format: +98XXXXXXXXXX or 09XXXXXXXXXX
+    # Also accepting the 9XXXXXXXXX format from the form
     pattern = r'^(\+98|0)?9\d{9}$'
     return bool(re.match(pattern, phone))
 
@@ -67,6 +68,10 @@ def normalize_phone_number(phone):
     # If starts with 98, replace with 0
     if phone.startswith('98'):
         phone = '0' + phone[2:]
+    
+    # If it's just a 10-digit number starting with 9, add a leading 0
+    if len(phone) == 10 and phone.startswith('9'):
+        phone = '0' + phone
     
     # Ensure it starts with 09
     if not phone.startswith('09'):

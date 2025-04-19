@@ -246,3 +246,60 @@ def generate_news():
             flash(f'خطا در تولید محتوا: {str(e)}', 'error')
     
     return render_template('admin/generate_news.html')
+
+@admin_bp.route('/generate_multiple_news', methods=['POST'])
+@login_required
+@admin_required
+def generate_multiple_news():
+    """Generate multiple AI-generated beauty articles"""
+    beauty_topics = [
+        "مراقبت از پوست در فصل تابستان",
+        "اهمیت استفاده از کرم ضد آفتاب",
+        "روش‌های طبیعی برای روشن کردن پوست",
+        "درمان‌های جدید برای جوان‌سازی پوست",
+        "راهکارهای مقابله با ریزش مو",
+        "فواید ماسک‌های خانگی برای پوست",
+        "تغذیه مناسب برای داشتن پوستی سالم",
+        "مراقبت از پوست خشک در فصل زمستان"
+    ]
+    
+    count = 0
+    errors = 0
+    
+    # Generate articles for each topic
+    for topic in beauty_topics:
+        try:
+            # Generate content
+            title, content = generate_beauty_news(topic)
+            
+            # Check if article with similar title already exists
+            existing = News.query.filter_by(title=title).first()
+            if existing:
+                continue
+                
+            # Create news article
+            news = News(
+                title=title,
+                content=content,
+                is_published=True,
+                is_ai_generated=True
+            )
+            
+            db.session.add(news)
+            count += 1
+            
+        except Exception as e:
+            print(f"Error generating article for topic {topic}: {str(e)}")
+            errors += 1
+    
+    # Commit all articles at once
+    if count > 0:
+        db.session.commit()
+        flash(f'{count} مقاله جدید با موفقیت ایجاد شد', 'success')
+    else:
+        flash('مقاله جدیدی ایجاد نشد', 'warning')
+    
+    if errors > 0:
+        flash(f'در تولید {errors} مقاله خطا رخ داد', 'error')
+    
+    return redirect(url_for('admin_bp.index'))

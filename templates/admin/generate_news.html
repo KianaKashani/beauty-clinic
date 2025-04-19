@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}تولید مقاله با هوش مصنوعی - کلینیک زیبایی{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="hero" style="padding: 3rem 0;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 data-aos="fade-left">تولید مقاله با هوش مصنوعی</h1>
+                <p class="lead" data-aos="fade-left" data-aos-delay="100">با استفاده از هوش مصنوعی، محتوا تولید کنید</p>
+            </div>
+            <nav aria-label="breadcrumb" data-aos="fade-right">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">صفحه اصلی</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin_bp.index') }}">پنل مدیریت</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">تولید مقاله</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<!-- Generate Content Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h5 class="mb-0">تولید مقاله با هوش مصنوعی</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ url_for('admin_bp.generate_news') }}" method="POST">
+                            <div class="mb-3">
+                                <label for="topic" class="form-label">موضوع مقاله</label>
+                                <input type="text" class="form-control" id="topic" name="topic" placeholder="مثال: مراقبت از پوست در فصل تابستان" required>
+                                <div class="form-text">موضوع مقاله را وارد کنید. هوش مصنوعی محتوای مناسب را تولید خواهد کرد.</div>
+                            </div>
+                            <div class="mb-4 alert alert-info">
+                                <h6 class="alert-heading mb-2"><i class="fas fa-info-circle me-2"></i> راهنما:</h6>
+                                <p class="mb-1">برای تولید محتوای بهتر، سعی کنید:</p>
+                                <ul class="mb-0">
+                                    <li>موضوعات مرتبط با زیبایی، پوست، مو و سلامت انتخاب کنید</li>
+                                    <li>موضوعات را خاص و دقیق انتخاب کنید</li>
+                                    <li>از عبارات کوتاه و روشن استفاده کنید</li>
+                                </ul>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-robot me-2"></i> تولید مقاله
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="mb-0">
+                            <form action="{{ url_for('admin_bp.generate_multiple_news') }}" method="POST">
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-outline-primary">
+                                        <i class="fas fa-magic me-2"></i> تولید خودکار چندین مقاله مرتبط با زیبایی
+                                    </button>
+                                </div>
+                                <div class="form-text text-center mt-2">با کلیک روی این دکمه، چندین مقاله با موضوعات مختلف زیبایی به صورت خودکار تولید می‌شود.</div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
