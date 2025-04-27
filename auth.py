@@ -93,10 +93,15 @@ def login():
             session['otp_phone'] = phone
             session['otp_code'] = otp_code
             
-            # Send OTP via SMS
-            send_verification_code(phone, otp_code)
+            try:
+                # Send OTP via SMS (if service available)
+                send_verification_code(phone, otp_code)
+                flash('کد تایید به شماره تلفن شما ارسال شد', 'info')
+            except Exception as e:
+                # If SMS service fails, display the code on screen (for demo purposes)
+                flash(f'کد تایید: {otp_code} (برای اهداف نمایشی نمایش داده شد)', 'warning')
+                print(f"SMS service error: {e}")
             
-            flash('کد تایید به شماره تلفن شما ارسال شد', 'info')
             return redirect(url_for('auth.verify_otp'))
     
     return render_template('login.html')
@@ -178,10 +183,15 @@ def register():
         session['register_password'] = password
         session['register_otp'] = otp_code
         
-        # Send OTP via SMS
-        send_verification_code(phone, otp_code)
+        try:
+            # Send OTP via SMS (if service available)
+            send_verification_code(phone, otp_code)
+            flash('کد تایید به شماره تلفن شما ارسال شد', 'info')
+        except Exception as e:
+            # If SMS service fails, display the code on screen (for demo purposes)
+            flash(f'کد تایید: {otp_code} (برای اهداف نمایشی نمایش داده شد)', 'warning')
+            print(f"SMS service error: {e}")
         
-        flash('کد تایید به شماره تلفن شما ارسال شد', 'info')
         return redirect(url_for('auth.verify_register'))
     
     return render_template('register.html')

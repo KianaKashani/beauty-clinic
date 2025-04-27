@@ -335,6 +335,47 @@ def submit_review():
 def news():
     # Get all published news
     all_news = News.query.filter_by(is_published=True).order_by(News.created_at.desc()).all()
+    
+    # If there are no articles, generate some sample articles
+    if not all_news:
+        try:
+            # Import the function directly
+            from ai_service import generate_beauty_news
+            
+            # Topics for beauty articles
+            topics = [
+                "مراقبت از پوست در فصل تابستان",
+                "اهمیت استفاده از کرم ضد آفتاب",
+                "روش‌های طبیعی برای روشن کردن پوست"
+            ]
+            
+            # Generate articles for each topic
+            for topic in topics:
+                try:
+                    # Generate content
+                    title, content = generate_beauty_news(topic)
+                    
+                    # Create news article
+                    news = News(
+                        title=title,
+                        content=content,
+                        is_published=True,
+                        is_ai_generated=True
+                    )
+                    
+                    db.session.add(news)
+                except Exception as e:
+                    print(f"Error generating article for topic {topic}: {str(e)}")
+            
+            # Commit all articles at once
+            db.session.commit()
+            
+            # Fetch the articles again
+            all_news = News.query.filter_by(is_published=True).order_by(News.created_at.desc()).all()
+        except Exception as e:
+            print(f"Error generating sample articles: {e}")
+            flash('خطا در بارگذاری مقالات', 'error')
+    
     return render_template('news.html', news=all_news)
 
 @main.route('/news/<int:news_id>')
