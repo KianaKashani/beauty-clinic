@@ -23,11 +23,8 @@ app.secret_key = os.environ.get("SESSION_SECRET", "beauty_clinic_secret_key")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # Database configuration
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 300,
-    "pool_pre_ping": True,
-}
+# Use SQLite in-memory database for development/demo
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///beauty_clinic.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Initialize database with app

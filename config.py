@@ -7,7 +7,7 @@ class Config:
     FLASK_ENV = 'development'
     
     # Database configuration
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///beauty_clinic.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # OpenAI configuration
