@@ -158,6 +158,24 @@ def booking():
     
     return render_template('booking.html', services=services, doctors=doctors)
 
+@main.route('/get_service_doctors')
+def get_service_doctors():
+    service_id = request.args.get('service_id', type=int)
+    
+    if not service_id:
+        return jsonify({'error': 'Service ID is required'}), 400
+    
+    # Get service
+    service = Service.query.get_or_404(service_id)
+    
+    # Get doctors who provide this service
+    doctors = service.doctors
+    
+    # Return JSON response
+    return jsonify({
+        'doctors': [{'id': doctor.id, 'name': doctor.name} for doctor in doctors]
+    })
+
 @main.route('/get_available_times')
 @login_required
 def get_available_times():
