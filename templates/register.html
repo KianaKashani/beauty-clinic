@@ -18,74 +18,162 @@
             <div class="col-lg-6">
                 <div class="card shadow">
                     <div class="card-body p-4">
-                        <form action="{{ url_for('auth.register') }}" method="POST" class="needs-validation" novalidate>
-                            <div class="mb-3">
-                                <label for="username" class="form-label">نام و نام خانوادگی <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="username" name="username" required>
-                                <div class="invalid-feedback">
-                                    لطفاً نام و نام خانوادگی خود را وارد کنید
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="phone" class="form-label">شماره تلفن همراه <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text">+98</span>
-                                    <input type="tel" class="form-control" id="phone" name="phone" placeholder="9123456789" required pattern="^9[0-9]{9}$">
-                                </div>
-                                <div class="form-text">شماره باید با 9 شروع شود (مثال: 9123456789)</div>
-                                <div class="invalid-feedback">
-                                    لطفاً شماره تلفن همراه معتبر وارد کنید
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="email" class="form-label">ایمیل (اختیاری)</label>
-                                <input type="email" class="form-control" id="email" name="email">
-                                <div class="invalid-feedback">
-                                    لطفاً ایمیل معتبر وارد کنید
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="password" class="form-label">رمز عبور <span class="text-danger">*</span></label>
-                                <input type="password" class="form-control" id="password" name="password" required minlength="8">
-                                <div class="form-text">رمز عبور باید حداقل 8 کاراکتر باشد</div>
-                                <div class="invalid-feedback">
-                                    رمز عبور باید حداقل 8 کاراکتر باشد
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="password_confirm" class="form-label">تکرار رمز عبور <span class="text-danger">*</span></label>
-                                <input type="password" class="form-control" id="password_confirm" name="password_confirm" required>
-                                <div class="invalid-feedback">
-                                    تکرار رمز عبور با رمز عبور مطابقت ندارد
-                                </div>
-                            </div>
-                            
-                            <div class="mb-4 form-check">
-                                <input type="checkbox" class="form-check-input" id="termsCheck" required>
-                                <label class="form-check-label" for="termsCheck">
-                                    <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">قوانین و مقررات</a> را مطالعه کرده و می‌پذیرم
-                                </label>
-                                <div class="invalid-feedback">
-                                    برای ثبت نام لازم است قوانین و مقررات را بپذیرید
-                                </div>
-                            </div>
-                            
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary">ثبت نام</button>
-                            </div>
-                        </form>
+                        <ul class="nav nav-tabs mb-4" id="registerTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="password-tab" data-bs-toggle="tab" data-bs-target="#password-panel" type="button" role="tab" aria-controls="password-panel" aria-selected="true">ثبت نام با رمز عبور</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="otp-tab" data-bs-toggle="tab" data-bs-target="#otp-panel" type="button" role="tab" aria-controls="otp-panel" aria-selected="false">ثبت نام با رمز یکبار مصرف</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="google-tab" data-bs-toggle="tab" data-bs-target="#google-panel" type="button" role="tab" aria-controls="google-panel" aria-selected="false">ثبت نام با گوگل</button>
+                            </li>
+                        </ul>
                         
-                        <hr class="my-4">
-                        
-                        <div class="text-center">
-                            <p class="mb-3">یا ثبت نام با:</p>
-                            <a href="{{ url_for('auth.google_login') }}" class="btn btn-outline-danger w-100">
-                                <i class="fab fa-google me-2"></i> ثبت نام با حساب گوگل
-                            </a>
+                        <div class="tab-content" id="registerTabsContent">
+                            <!-- ثبت نام با رمز عبور -->
+                            <div class="tab-pane fade show active" id="password-panel" role="tabpanel" aria-labelledby="password-tab">
+                                <form action="{{ url_for('auth.register') }}" method="POST" class="needs-validation" novalidate>
+                                    <input type="hidden" name="register_method" value="password">
+                                    
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label">نام و نام خانوادگی <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="username" name="username" required>
+                                        <div class="invalid-feedback">
+                                            لطفاً نام و نام خانوادگی خود را وارد کنید
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="phone" class="form-label">شماره تلفن همراه <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">+98</span>
+                                            <input type="tel" class="form-control" id="phone" name="phone" placeholder="9123456789" required pattern="^9[0-9]{9}$">
+                                        </div>
+                                        <div class="form-text">شماره باید با 9 شروع شود (مثال: 9123456789)</div>
+                                        <div class="invalid-feedback">
+                                            لطفاً شماره تلفن همراه معتبر وارد کنید
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">ایمیل (اختیاری)</label>
+                                        <input type="email" class="form-control" id="email" name="email">
+                                        <div class="invalid-feedback">
+                                            لطفاً ایمیل معتبر وارد کنید
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label">رمز عبور <span class="text-danger">*</span></label>
+                                        <input type="password" class="form-control" id="password" name="password" required minlength="8">
+                                        <div class="form-text">رمز عبور باید حداقل 8 کاراکتر باشد</div>
+                                        <div class="invalid-feedback">
+                                            رمز عبور باید حداقل 8 کاراکتر باشد
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="password_confirm" class="form-label">تکرار رمز عبور <span class="text-danger">*</span></label>
+                                        <input type="password" class="form-control" id="password_confirm" name="password_confirm" required>
+                                        <div class="invalid-feedback">
+                                            تکرار رمز عبور با رمز عبور مطابقت ندارد
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4 form-check">
+                                        <input type="checkbox" class="form-check-input" id="termsCheck1" required>
+                                        <label class="form-check-label" for="termsCheck1">
+                                            <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">قوانین و مقررات</a> را مطالعه کرده و می‌پذیرم
+                                        </label>
+                                        <div class="invalid-feedback">
+                                            برای ثبت نام لازم است قوانین و مقررات را بپذیرید
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary">ثبت نام</button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <!-- ثبت نام با رمز یکبار مصرف -->
+                            <div class="tab-pane fade" id="otp-panel" role="tabpanel" aria-labelledby="otp-tab">
+                                <form action="{{ url_for('auth.register') }}" method="POST" class="needs-validation" novalidate>
+                                    <input type="hidden" name="register_method" value="otp">
+                                    
+                                    <div class="mb-3">
+                                        <label for="username_otp" class="form-label">نام و نام خانوادگی <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="username_otp" name="username" required>
+                                        <div class="invalid-feedback">
+                                            لطفاً نام و نام خانوادگی خود را وارد کنید
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="phone_otp" class="form-label">شماره تلفن همراه <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">+98</span>
+                                            <input type="tel" class="form-control" id="phone_otp" name="phone" placeholder="9123456789" required pattern="^9[0-9]{9}$">
+                                        </div>
+                                        <div class="form-text">کد تایید به این شماره ارسال خواهد شد</div>
+                                        <div class="invalid-feedback">
+                                            لطفاً شماره تلفن همراه معتبر وارد کنید
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="email_otp" class="form-label">ایمیل (اختیاری)</label>
+                                        <input type="email" class="form-control" id="email_otp" name="email">
+                                        <div class="invalid-feedback">
+                                            لطفاً ایمیل معتبر وارد کنید
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4 form-check">
+                                        <input type="checkbox" class="form-check-input" id="termsCheck2" required>
+                                        <label class="form-check-label" for="termsCheck2">
+                                            <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">قوانین و مقررات</a> را مطالعه کرده و می‌پذیرم
+                                        </label>
+                                        <div class="invalid-feedback">
+                                            برای ثبت نام لازم است قوانین و مقررات را بپذیرید
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="alert alert-info" role="alert">
+                                        <i class="fas fa-info-circle me-2"></i> 
+                                        پس از ثبت اطلاعات، کد تایید برای شما ارسال خواهد شد.
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary">دریافت کد تایید</button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <!-- ثبت نام با گوگل -->
+                            <div class="tab-pane fade" id="google-panel" role="tabpanel" aria-labelledby="google-tab">
+                                <div class="text-center py-4">
+                                    <div class="mb-4">
+                                        <i class="fab fa-google fa-3x text-danger mb-3"></i>
+                                        <h5>ثبت نام با حساب گوگل</h5>
+                                        <p>برای ثبت نام آسان و سریع، از حساب گوگل خود استفاده کنید.</p>
+                                    </div>
+                                    
+                                    <div class="mb-4 form-check d-flex justify-content-center">
+                                        <input type="checkbox" class="form-check-input me-2" id="termsCheck3">
+                                        <label class="form-check-label" for="termsCheck3">
+                                            <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">قوانین و مقررات</a> را مطالعه کرده و می‌پذیرم
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('auth.google_login') }}" class="btn btn-danger" id="googleLoginBtn" disabled>
+                                            <i class="fab fa-google me-2"></i> ورود با حساب گوگل
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="text-center mt-4">
@@ -151,16 +239,34 @@
         password.addEventListener('change', validatePasswordMatch);
         passwordConfirm.addEventListener('keyup', validatePasswordMatch);
         
-        // Form validation
-        const form = document.querySelector('.needs-validation');
-        form.addEventListener('submit', function(event) {
-            if (!form.checkValidity()) {
+        // Form validation for all forms
+        const forms = document.querySelectorAll('.needs-validation');
+        forms.forEach(form => {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                
+                form.classList.add('was-validated');
+            }, false);
+        });
+        
+        // Enable Google login button when terms are accepted
+        const termsCheck3 = document.getElementById('termsCheck3');
+        const googleLoginBtn = document.getElementById('googleLoginBtn');
+        
+        termsCheck3.addEventListener('change', function() {
+            googleLoginBtn.disabled = !this.checked;
+        });
+        
+        // Set register method parameter for Google login
+        googleLoginBtn.addEventListener('click', function(event) {
+            if (!termsCheck3.checked) {
                 event.preventDefault();
-                event.stopPropagation();
+                alert('لطفاً قوانین و مقررات را مطالعه کرده و بپذیرید');
             }
-            
-            form.classList.add('was-validated');
-        }, false);
+        });
     });
 </script>
 {% endblock %}

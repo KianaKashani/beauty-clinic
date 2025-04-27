@@ -148,16 +148,11 @@ def register():
         username = request.form.get('username')
         email = request.form.get('email')
         phone = normalize_phone_number(request.form.get('phone'))
-        password = request.form.get('password')
-        password_confirm = request.form.get('password_confirm')
+        register_method = request.form.get('register_method', 'password')
         
-        # Validate inputs
-        if not username or not phone or not password:
+        # Validate common inputs
+        if not username or not phone:
             flash('لطفا تمامی فیلدهای الزامی را پر کنید', 'error')
-            return render_template('register.html')
-        
-        if password != password_confirm:
-            flash('تکرار رمز عبور مطابقت ندارد', 'error')
             return render_template('register.html')
         
         if not validate_phone_number(phone):
@@ -172,27 +167,68 @@ def register():
         if email and User.query.filter_by(email=email).first():
             flash('این ایمیل قبلا ثبت شده است', 'error')
             return render_template('register.html')
+            
+        # Handle different registration methods
+        if register_method == 'password':
+            # Registration with password
+            password = request.form.get('password')
+            password_confirm = request.form.get('password_confirm')
+            
+            if not password:
+                flash('لطفا رمز عبور را وارد کنید', 'error')
+                return render_template('register.html')
+                
+            if password != password_confirm:
+                flash('تکرار رمز عبور مطابقت ندارد', 'error')
+                return render_template('register.html')
+                
+            # Create new user directly
+            new_user = User(
+                username=username,
+                email=email,
+                phone=phone
+            )
+            new_user.set_password(password)
+            
+            # Save to database
+            db.session.add(new_user)
+            db.session.commit()
+            
+            # Login the new user
+            login_user(new_user)
+            
+            flash('ثبت نام با موفقیت انجام شد', 'success')
+            return redirect(url_for('main.index'))
+            
+        elif register_method == 'otp':
+            # Registration with OTP
+            # Generate OTP code
+            otp_code = str(random.randint(100000, 999999))
+            
+            # Save registration info and OTP in session
+            session['register_username'] = username
+            session['register_email'] = email
+            session['register_phone'] = phone
+            session['register_otp'] = otp_code
+            
+            # Generate a random password for the user
+            random_password = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=16))
+            session['register_password'] = random_password
+            
+            try:
+                # Send OTP via SMS (if service available)
+                send_verification_code(phone, otp_code)
+                flash('کد تایید به شماره تلفن شما ارسال شد', 'info')
+            except Exception as e:
+                # If SMS service fails, display the code on screen (for demo purposes)
+                flash(f'کد تایید: {otp_code} (برای اهداف نمایشی نمایش داده شد)', 'warning')
+                print(f"SMS service error: {e}")
+            
+            return redirect(url_for('auth.verify_register'))
         
-        # Generate OTP code
-        otp_code = str(random.randint(100000, 999999))
-        
-        # Save registration info and OTP in session
-        session['register_username'] = username
-        session['register_email'] = email
-        session['register_phone'] = phone
-        session['register_password'] = password
-        session['register_otp'] = otp_code
-        
-        try:
-            # Send OTP via SMS (if service available)
-            send_verification_code(phone, otp_code)
-            flash('کد تایید به شماره تلفن شما ارسال شد', 'info')
-        except Exception as e:
-            # If SMS service fails, display the code on screen (for demo purposes)
-            flash(f'کد تایید: {otp_code} (برای اهداف نمایشی نمایش داده شد)', 'warning')
-            print(f"SMS service error: {e}")
-        
-        return redirect(url_for('auth.verify_register'))
+        else:
+            flash('روش ثبت نام نامعتبر است', 'error')
+            return render_template('register.html')
     
     return render_template('register.html')
 
@@ -271,12 +307,22 @@ def google_callback():
     )
     
     # Exchange authorization code for tokens
-    token_response = requests.post(
-        token_url,
-        headers=headers,
-        data=body,
-        auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
-    )
+    try:
+        token_response = requests.post(
+            token_url,
+            headers=headers,
+            data=body,
+            auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET) if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET else None,
+        )
+        
+        if token_response.status_code != 200:
+            flash("خطا در احراز هویت با گوگل. لطفا مجددا تلاش کنید.", "error")
+            print(f"Google auth error: {token_response.text}")
+            return redirect(url_for("auth.login"))
+    except Exception as e:
+        flash("خطا در ارتباط با سرور گوگل. لطفا مجددا تلاش کنید.", "error")
+        print(f"Google auth connection error: {str(e)}")
+        return redirect(url_for("auth.login"))
     
     # Parse the token response
     client.parse_request_body_response(json.dumps(token_response.json()))

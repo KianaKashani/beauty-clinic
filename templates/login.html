@@ -20,10 +20,13 @@
                     <div class="card-body p-4">
                         <ul class="nav nav-tabs mb-4" id="loginTabs" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="password-tab" data-bs-toggle="tab" data-bs-target="#password-pane" type="button" role="tab" aria-controls="password-pane" aria-selected="true">ورود با رمز عبور</button>
+                                <button class="nav-link active" id="password-tab" data-bs-toggle="tab" data-bs-target="#password-pane" type="button" role="tab" aria-controls="password-pane" aria-selected="true">رمز عبور</button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="otp-tab" data-bs-toggle="tab" data-bs-target="#otp-pane" type="button" role="tab" aria-controls="otp-pane" aria-selected="false">ورود با رمز یکبار مصرف</button>
+                                <button class="nav-link" id="otp-tab" data-bs-toggle="tab" data-bs-target="#otp-pane" type="button" role="tab" aria-controls="otp-pane" aria-selected="false">رمز یکبار مصرف</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="google-tab" data-bs-toggle="tab" data-bs-target="#google-pane" type="button" role="tab" aria-controls="google-pane" aria-selected="false">گوگل</button>
                             </li>
                         </ul>
                         
@@ -77,15 +80,23 @@
                                     </div>
                                 </form>
                             </div>
-                        </div>
-                        
-                        <hr class="my-4">
-                        
-                        <div class="text-center">
-                            <p class="mb-3">یا ورود با:</p>
-                            <a href="{{ url_for('auth.google_login') }}" class="btn btn-outline-danger w-100">
-                                <i class="fab fa-google me-2"></i> ورود با حساب گوگل
-                            </a>
+                            
+                            <!-- Google Login -->
+                            <div class="tab-pane fade" id="google-pane" role="tabpanel" aria-labelledby="google-tab">
+                                <div class="text-center py-4">
+                                    <div class="mb-4">
+                                        <i class="fab fa-google fa-3x text-danger mb-3"></i>
+                                        <h5>ورود با حساب گوگل</h5>
+                                        <p>برای ورود آسان و سریع، از حساب گوگل خود استفاده کنید.</p>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('auth.google_login') }}" class="btn btn-danger">
+                                            <i class="fab fa-google me-2"></i> ورود با حساب گوگل
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="text-center mt-4">
