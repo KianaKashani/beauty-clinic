@@ -40,13 +40,19 @@ def login():
         return redirect(url_for('main.index'))
     
     if request.method == 'POST':
+        # Add debug logging
+        print(f"Login form data: {request.form}")
+        
         # Determine login method
         login_method = request.form.get('login_method', 'password')
+        print(f"Login method: {login_method}")
         
         if login_method == 'password':
             # Login with password
             identifier = request.form.get('identifier')  # Email or phone
             password = request.form.get('password')
+            
+            print(f"Login attempt - Identifier: {identifier}")
             
             # Validate inputs
             if not identifier or not password:
@@ -56,6 +62,7 @@ def login():
             # Check if identifier is email or phone
             if '@' in identifier:
                 user = User.query.filter_by(email=identifier).first()
+                print(f"Looking up user by email: {identifier}, Found: {user is not None}")
             else:
                 # Normalize phone number
                 phone = normalize_phone_number(identifier)
@@ -64,17 +71,27 @@ def login():
                     return render_template('login.html')
                 
                 user = User.query.filter_by(phone=phone).first()
+                print(f"Looking up user by phone: {phone}, Found: {user is not None}")
             
             # Check if user exists and password is correct
-            if user and user.check_password(password):
-                login_user(user)
-                return redirect(url_for('main.index'))
+            if user:
+                is_password_valid = user.check_password(password)
+                print(f"Password validation result: {is_password_valid}")
+                
+                if is_password_valid:
+                    login_user(user)
+                    flash('ورود موفقیت‌آمیز بود', 'success')
+                    return redirect(url_for('main.index'))
+                else:
+                    flash('رمز عبور اشتباه است', 'error')
             else:
-                flash('نام کاربری یا رمز عبور اشتباه است', 'error')
+                flash('کاربری با این مشخصات یافت نشد', 'error')
         
         elif login_method == 'otp':
             # Login with OTP
             phone = normalize_phone_number(request.form.get('phone'))
+            
+            print(f"OTP login attempt for phone: {phone}")
             
             if not phone or not validate_phone_number(phone):
                 flash('شماره تلفن نامعتبر است', 'error')
@@ -82,6 +99,8 @@ def login():
             
             # Check if user exists
             user = User.query.filter_by(phone=phone).first()
+            print(f"Looking up user by phone for OTP: {phone}, Found: {user is not None}")
+            
             if not user:
                 flash('کاربری با این شماره تلفن یافت نشد', 'error')
                 return render_template('login.html')
