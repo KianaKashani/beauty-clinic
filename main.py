@@ -118,8 +118,21 @@ def create_sample_data():
                 role=UserRole.ADMIN,
                 is_active=True
             )
-            admin.password_hash = generate_password_hash('admin12345')
+            admin.set_password('admin12345')  # Use set_password method instead of direct assignment
             db.session.add(admin)
+            
+        # Create a test user for easier testing
+        test_email = 'test@example.com'
+        if not User.query.filter_by(email=test_email).first():
+            test_user = User(
+                username='کاربر تست',
+                email=test_email,
+                phone='09123456789',
+                role=UserRole.PATIENT,
+                is_active=True
+            )
+            test_user.set_password('password123')  # Simple password for testing
+            db.session.add(test_user)
         
         # Commit all changes
         db.session.commit()
