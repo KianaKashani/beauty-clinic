@@ -1,6 +1,7 @@
 import os
 import logging
 import datetime
+import sqlite3
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
@@ -22,9 +23,20 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "beauty_clinic_secret_key")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
+# Create SQLite database file
+db_path = 'beauty_clinic.db'
+try:
+    # Try to create and test connection to SQLite database
+    conn = sqlite3.connect(db_path)
+    conn.close()
+    print(f"SQLite database created at {db_path}")
+except Exception as e:
+    print(f"Error creating SQLite database: {e}")
+    # Use in-memory database as fallback
+    db_path = ':memory:'
+
 # Database configuration
-# Use SQLite in-memory database for development/demo
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///beauty_clinic.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Initialize database with app
