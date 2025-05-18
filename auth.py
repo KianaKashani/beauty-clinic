@@ -6,33 +6,24 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from oauthlib.oauth2 import WebApplicationClient
-from app import db
+from extensions import db
 from models import User
 from utils import validate_phone_number, normalize_phone_number
 from sms_service import send_verification_code
 
 auth = Blueprint('auth', __name__)
+main = Blueprint('main', __name__)
 
 # Google OAuth Configuration
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
 
 # Setup Google OAuth client
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
-# Make sure to use this redirect URL. It has to match the one in the whitelist
-DEV_REDIRECT_URL = f'https://{os.environ.get("REPLIT_DEV_DOMAIN", "localhost")}/google_login/callback'
+DEV_REDIRECT_URL = "http://localhost:5001/google_login/callback"
 
-# Display setup instructions
-print(f"""To make Google authentication work:
-1. Go to https://console.cloud.google.com/apis/credentials
-2. Create a new OAuth 2.0 Client ID
-3. Add {DEV_REDIRECT_URL} to Authorized redirect URIs
-
-For detailed instructions, see:
-https://docs.replit.com/additional-resources/google-auth-in-flask#set-up-your-oauth-app--client
-""")
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -299,7 +290,7 @@ def google_login():
         authorization_endpoint,
         # Replacing http:// with https:// is important as the external
         # protocol must be https to match the URI whitelisted
-        redirect_uri=request.base_url.replace("http://", "https://") + "/callback",
+        redirect_uri=request.base_url + "/callback",
         scope=["openid", "email", "profile"],
     )
     
@@ -320,8 +311,8 @@ def google_callback():
         token_endpoint,
         # Replacing http:// with https:// is important as the external
         # protocol must be https to match the URI whitelisted
-        authorization_response=request.url.replace("http://", "https://"),
-        redirect_url=request.base_url.replace("http://", "https://"),
+        authorization_response=request.url,
+        redirect_url=request.base_url,
         code=code
     )
     
@@ -352,11 +343,13 @@ def google_callback():
     userinfo_response = requests.get(uri, headers=headers, data=body)
     
     # Process user info
-    if userinfo_response.json().get("email_verified"):
-        email = userinfo_response.json()["email"]
-        username = userinfo_response.json().get("given_name", "")
-    else:
-        flash("ایمیل کاربر توسط گوگل تایید نشده است", "error")
+    userinfo = userinfo_response.json()
+    email = userinfo.get("email")
+    email_verified = userinfo.get("email_verified")
+    username = userinfo.get("given_name") or email.split("@")[0]
+
+    if not email or not email_verified:
+        flash("ایمیل کاربر تایید نشده است یا اطلاعات کافی دریافت نشد", "error")
         return redirect(url_for("auth.login"))
     
     # Find or create user

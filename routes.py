@@ -1,38 +1,32 @@
+from time import time
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 from flask_login import login_required, current_user
-from app import db
+from extensions import db
 from models import User, Doctor, Service, Appointment, Review, Portfolio, News
 from utils import shamsi_to_gregorian, gregorian_to_shamsi, format_shamsi_date, admin_required, generate_available_time_slots
 from ai_service import get_ai_consultation, generate_beauty_news
 from payment_service import create_payment, verify_payment
 from sms_service import send_confirmation_sms, send_reminder_sms
-import datetime
+from datetime import time
+import re
 
 main = Blueprint('main', __name__)
 
 @main.route('/')
 def index():
-    # Get featured services (limit 4)
     featured_services = Service.query.limit(4).all()
-    
-    # Get featured doctors (limit 3)
     featured_doctors = Doctor.query.limit(3).all()
-    
-    # Get latest news (limit 3)
     latest_news = News.query.filter_by(is_published=True).order_by(News.created_at.desc()).limit(3).all()
-    
-    # Get featured portfolio items (limit 6)
     featured_portfolio = Portfolio.query.filter_by(is_featured=True).limit(6).all()
-    
-    # Get approved reviews (limit 5)
     recent_reviews = Review.query.filter_by(is_approved=True).order_by(Review.created_at.desc()).limit(5).all()
-    
-    return render_template('index.html', 
+    return render_template('index.html',
                            services=featured_services,
                            doctors=featured_doctors,
-                           news=latest_news,
+                         news=latest_news,
                            portfolio=featured_portfolio,
                            reviews=recent_reviews)
+
+
 
 @main.route('/about')
 def about():
@@ -97,8 +91,8 @@ def booking():
     if request.method == 'POST':
         service_id = request.form.get('service_id', type=int)
         doctor_id = request.form.get('doctor_id', type=int)
-        date_str = request.form.get('date')
-        time_str = request.form.get('time')
+        date_str = request.form.get('date', '').strip()
+        time_str = request.form.get('time', '').strip()
         notes = request.form.get('notes', '')
         
         # Validate inputs
@@ -106,17 +100,29 @@ def booking():
             flash('لطفا تمامی فیلدها را پر کنید', 'error')
             return redirect(url_for('main.booking'))
         
-        # Convert Shamsi date to Gregorian
+          
+        # بررسی صحت تاریخ شمسی (فرمت YYYY/MM/DD)
+        if not re.match(r'^\d{4}/\d{2}/\d{2}$', date_str):
+            flash('فرمت تاریخ نامعتبر است. مثال: 1403/02/28', 'error')
+            return redirect(url_for('main.booking'))
+
+        # تبدیل تاریخ شمسی به میلادی
         gregorian_date = shamsi_to_gregorian(date_str)
         if not gregorian_date:
             flash('تاریخ انتخابی نامعتبر است', 'error')
             return redirect(url_for('main.booking'))
-        
-        # Parse time string
+
+        # بررسی صحت زمان (فرمت HH:MM)
+        if not re.match(r'^\d{2}:\d{2}$', time_str):
+            flash('فرمت زمان معتبر نیست. مثال: 09:30', 'error')
+            return redirect(url_for('main.booking'))
+
+        # تبدیل به آبجکت زمان
         try:
             hours, minutes = map(int, time_str.split(':'))
-            appointment_time = datetime.time(hour=hours, minute=minutes)
-        except:
+            appointment_time = time(hour=hours, minute=minutes)
+        except Exception as e:
+            print('Error parsing time:', e)
             flash('زمان انتخابی نامعتبر است', 'error')
             return redirect(url_for('main.booking'))
         
@@ -149,8 +155,10 @@ def booking():
                 time_str
             )
         
-        # Redirect to payment
-        return redirect(url_for('main.payment', appointment_id=new_appointment.id))
+        # Redirect to payment فعال باشه
+        #return redirect(url_for('main.payment', appointment_id=new_appointment.id))
+        # اگه فعال نباشه
+        return redirect(url_for('main.profile'))
     
     # GET request - show booking form
     services = Service.query.all()
@@ -410,6 +418,34 @@ def news_detail(news_id):
     related_news = News.query.filter(News.id != news_id, News.is_published == True).order_by(News.created_at.desc()).limit(3).all()
     
     return render_template('news_detail.html', news=news_item, related_news=related_news)
+ 
+@main.route('/generate_ai_news')
+@login_required
+@admin_required
+def generate_ai_news():
+    topics = [
+        "روش‌های نوین جوانسازی پوست",
+        "تکنولوژی‌های جدید در لیزر درمانی",
+        "مراقبت‌های پس از تزریق ژل و بوتاکس",
+        "تغذیه و تأثیر آن بر زیبایی پوست"
+    ]
+
+    for topic in topics:
+        title, content = generate_beauty_news(topic)
+        if not title or not content:
+            continue
+
+        news = News(
+            title=title,
+            content=content,
+            is_published=True,
+            is_ai_generated=True
+        )
+        db.session.add(news)
+
+    db.session.commit()
+    flash("مقالات جدید با موفقیت تولید و منتشر شدند", "success")
+    return redirect(url_for("main.news"))
 
 @main.route('/ai_consultation', methods=['POST'])
 def ai_consultation():
@@ -423,3 +459,4 @@ def ai_consultation():
         return jsonify({'response': response})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    

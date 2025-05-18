@@ -1,305 +1,191 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required
-from app import db, admin
+from flask_login import login_required, current_user
+from extensions import db, admin
 from models import User, Doctor, Service, Appointment, Review, Portfolio, News
-from utils import admin_required, shamsi_to_gregorian, format_shamsi_date
+from utils import shamsi_to_gregorian, format_shamsi_date
 from flask_admin.contrib.sqla import ModelView
 from wtforms import TextAreaField, SelectField
 from ai_service import generate_beauty_news
-import datetime
+from datetime import date, time, datetime, timezone
+from functools import wraps
+
 
 admin_bp = Blueprint('admin_bp', __name__, url_prefix='/admin')
 
-# Custom ModelView classes with admin_required
+
+# Middleware: فقط ادمین اجازه دسترسی دارد
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin():
+            flash("شما دسترسی ندارید", "error")
+            return redirect(url_for('main.index'))
+        try:
+            return f(*args, **kwargs)
+        except Exception as e:
+            flash(f"خطا در دسترسی: {e}", "error")
+            return redirect(url_for('main.index'))
+    return decorated
+
+
+# Base Mixin برای همه ویوهای ادمین
 class AdminRequiredMixin:
     def is_accessible(self):
-        from flask_login import current_user
-        return current_user.is_authenticated and current_user.is_admin()
-    
+        try:
+            return current_user.is_authenticated and current_user.is_admin()
+        except Exception as e:
+            return False
+
     def inaccessible_callback(self, name, **kwargs):
-        flash('شما دسترسی لازم برای این صفحه را ندارید', 'error')
+        flash('دسترسی غیرمجاز', 'error')
         return redirect(url_for('main.index'))
 
+
+# ویوهای ادمین
 class UserModelView(AdminRequiredMixin, ModelView):
-    column_list = ('id', 'username', 'email', 'phone', 'role', 'created_at', 'last_login', 'is_active')
-    column_searchable_list = ('username', 'email', 'phone')
-    column_filters = ('role', 'is_active', 'created_at')
+    column_list = ('username', 'email', 'phone', 'role', 'created_at', 'last_login')
     form_columns = ('username', 'email', 'phone', 'role', 'is_active')
-    column_labels = {
-        'id': 'شناسه',
-        'username': 'نام کاربری',
-        'email': 'ایمیل',
-        'phone': 'تلفن',
-        'role': 'نقش',
-        'created_at': 'تاریخ ثبت نام',
-        'last_login': 'آخرین ورود',
-        'is_active': 'فعال'
-    }
+
 
 class DoctorModelView(AdminRequiredMixin, ModelView):
-    column_list = ('id', 'name', 'title', 'experience_years')
+    form_overrides = {'bio': TextAreaField}
     form_columns = ('name', 'title', 'bio', 'image_url', 'experience_years', 'education', 'certifications', 'services')
-    form_overrides = {
-        'bio': TextAreaField,
-        'education': TextAreaField,
-        'certifications': TextAreaField
-    }
-    column_labels = {
-        'id': 'شناسه',
-        'name': 'نام',
-        'title': 'تخصص',
-        'bio': 'بیوگرافی',
-        'image_url': 'تصویر',
-        'experience_years': 'سابقه (سال)',
-        'education': 'تحصیلات',
-        'certifications': 'گواهینامه ها',
-        'services': 'خدمات'
-    }
+
 
 class ServiceModelView(AdminRequiredMixin, ModelView):
-    column_list = ('id', 'name', 'price', 'duration')
-    form_columns = ('name', 'description', 'short_description', 'price', 'duration', 'image_url', 'doctors')
     form_overrides = {
         'description': TextAreaField,
         'short_description': TextAreaField
     }
-    column_labels = {
-        'id': 'شناسه',
-        'name': 'نام خدمت',
-        'description': 'توضیحات کامل',
-        'short_description': 'توضیحات کوتاه',
-        'price': 'قیمت',
-        'duration': 'مدت زمان (دقیقه)',
-        'image_url': 'تصویر',
-        'doctors': 'پزشکان'
-    }
+    form_columns = ('name', 'description', 'short_description', 'price', 'duration', 'image_url', 'doctors')
+
 
 class AppointmentModelView(AdminRequiredMixin, ModelView):
-    column_list = ('id', 'user', 'doctor', 'service', 'date', 'time', 'status', 'payment_status')
-    column_searchable_list = ('user.username', 'user.phone', 'doctor.name')
-    column_filters = ('status', 'payment_status', 'date')
-    form_columns = ('user', 'doctor', 'service', 'date', 'time', 'status', 'payment_status', 'notes')
     form_overrides = {
-        'notes': TextAreaField,
-        'status': SelectField
+        'notes': TextAreaField
     }
-    form_args = {
-        'status': {
-            'choices': [
-                ('pending', 'در انتظار'),
-                ('confirmed', 'تایید شده'),
-                ('canceled', 'لغو شده'),
-                ('completed', 'انجام شده')
-            ]
-        },
-        'payment_status': {
-            'choices': [
-                ('pending', 'در انتظار پرداخت'),
-                ('paid', 'پرداخت شده')
-            ]
-        }
+
+    form_choices = {
+        'status': [
+            ('pending', 'در انتظار'),
+            ('confirmed', 'تایید شده'),
+            ('canceled', 'لغو شده'),
+            ('completed', 'انجام شده')
+        ],
+        'payment_status': [
+            ('pending', 'در انتظار پرداخت'),
+            ('paid', 'پرداخت شده')
+        ]
     }
-    column_labels = {
-        'id': 'شناسه',
-        'user': 'کاربر',
-        'doctor': 'پزشک',
-        'service': 'خدمت',
-        'date': 'تاریخ',
-        'time': 'زمان',
-        'status': 'وضعیت',
-        'payment_status': 'وضعیت پرداخت',
-        'notes': 'یادداشت',
-        'created_at': 'تاریخ ایجاد'
-    }
+
+    form_columns = (
+        'user',
+        'doctor',
+        'service',
+        'date',
+        'time',
+        'status',
+        'payment_status',
+        'notes'
+    )
+
 
 class ReviewModelView(AdminRequiredMixin, ModelView):
-    column_list = ('id', 'user', 'service', 'rating', 'created_at', 'is_approved')
-    column_filters = ('rating', 'is_approved', 'created_at')
+    form_overrides = {'comment': TextAreaField}
     form_columns = ('user', 'service', 'rating', 'comment', 'is_approved')
-    form_overrides = {
-        'comment': TextAreaField,
-    }
-    column_labels = {
-        'id': 'شناسه',
-        'user': 'کاربر',
-        'service': 'خدمت',
-        'rating': 'امتیاز',
-        'comment': 'نظر',
-        'created_at': 'تاریخ ثبت',
-        'is_approved': 'تایید شده'
-    }
+
 
 class PortfolioModelView(AdminRequiredMixin, ModelView):
-    column_list = ('id', 'service', 'title', 'is_featured')
+    form_overrides = {'description': TextAreaField}
     form_columns = ('service', 'title', 'description', 'before_image_url', 'after_image_url', 'is_featured')
-    form_overrides = {
-        'description': TextAreaField,
-    }
-    column_labels = {
-        'id': 'شناسه',
-        'service': 'خدمت',
-        'title': 'عنوان',
-        'description': 'توضیحات',
-        'before_image_url': 'تصویر قبل',
-        'after_image_url': 'تصویر بعد',
-        'is_featured': 'ویژه'
-    }
+
 
 class NewsModelView(AdminRequiredMixin, ModelView):
-    column_list = ('id', 'title', 'created_at', 'is_published', 'is_ai_generated')
-    column_filters = ('is_published', 'is_ai_generated', 'created_at')
+    form_overrides = {'content': TextAreaField}
     form_columns = ('title', 'content', 'image_url', 'is_published', 'is_ai_generated')
-    form_overrides = {
-        'content': TextAreaField,
-    }
-    column_labels = {
-        'id': 'شناسه',
-        'title': 'عنوان',
-        'content': 'محتوا',
-        'image_url': 'تصویر',
-        'created_at': 'تاریخ انتشار',
-        'is_published': 'منتشر شده',
-        'is_ai_generated': 'تولید شده توسط هوش مصنوعی'
-    }
 
-# Register ModelViews
-admin.add_view(UserModelView(User, db.session, name='کاربران'))
-admin.add_view(DoctorModelView(Doctor, db.session, name='پزشکان'))
-admin.add_view(ServiceModelView(Service, db.session, name='خدمات'))
-admin.add_view(AppointmentModelView(Appointment, db.session, name='نوبت ها'))
-admin.add_view(ReviewModelView(Review, db.session, name='نظرات'))
-admin.add_view(PortfolioModelView(Portfolio, db.session, name='نمونه کارها'))
-admin.add_view(NewsModelView(News, db.session, name='اخبار'))
+# ثبت ویوها در پنل ادمین
+admin.add_view(UserModelView(User, db.session, name='کاربران', endpoint='users_admin'))
+admin.add_view(DoctorModelView(Doctor, db.session, name='پزشکان', endpoint='doctors_admin'))
+admin.add_view(ServiceModelView(Service, db.session, name='خدمات', endpoint='services_admin'))
+admin.add_view(AppointmentModelView(Appointment, db.session, name='نوبت‌ها', endpoint='appointments_admin'))
+admin.add_view(ReviewModelView(Review, db.session, name='نظرات', endpoint='reviews_admin'))
+admin.add_view(PortfolioModelView(Portfolio, db.session, name='نمونه‌کارها', endpoint='portfolio_admin'))
+admin.add_view(NewsModelView(News, db.session, name='اخبار', endpoint='news_admin'))
 
-# Custom admin views
+
+# داشبورد ادمین
 @admin_bp.route('/')
 @login_required
 @admin_required
 def index():
-    # Get counts for dashboard
-    total_users = User.query.count()
-    total_appointments = Appointment.query.count()
-    pending_appointments = Appointment.query.filter_by(status='pending').count()
-    today_appointments = Appointment.query.filter_by(date=datetime.date.today()).count()
-    
-    # Get latest appointments
-    recent_appointments = Appointment.query.order_by(Appointment.date.desc()).limit(5).all()
-    
-    # Format appointments for display
-    formatted_appointments = []
-    for appointment in recent_appointments:
-        user = User.query.get(appointment.user_id)
-        service = Service.query.get(appointment.service_id)
-        doctor = Doctor.query.get(appointment.doctor_id)
-        
-        formatted_appointment = {
-            'id': appointment.id,
-            'user_name': user.username,
-            'user_phone': user.phone,
-            'service_name': service.name,
-            'doctor_name': doctor.name,
-            'date': format_shamsi_date(appointment.date),
-            'time': appointment.time.strftime('%H:%M'),
-            'status': appointment.status,
-            'payment_status': appointment.payment_status
-        }
-        
-        formatted_appointments.append(formatted_appointment)
-    
-    return render_template('admin/index.html', 
-                           total_users=total_users,
-                           total_appointments=total_appointments,
-                           pending_appointments=pending_appointments,
-                           today_appointments=today_appointments,
-                           recent_appointments=formatted_appointments)
+    stats = {
+        "users": User.query.count(),
+        "appointments": Appointment.query.count(),
+        "pending": Appointment.query.filter_by(status='pending').count(),
+        "today": Appointment.query.filter_by(date=date.today()).count()
+    }
 
+    recent_appointments = Appointment.query.order_by(Appointment.date.desc()).limit(5).all()
+    formatted_appointments = []
+    for a in recent_appointments:
+        formatted_appointments.append({
+            "id": a.id,
+            "user_name": a.user.username if a.user else "_",
+            "user_phone": a.user.phone if a.user else "_",
+            "service_name": a.service.name if a.service else "_",
+            "doctor_name": a.doctor.name if a.doctor else "_",
+            "date": format_shamsi_date(a.date),
+            "time": a.time.strftime('%H:%M'),
+            "status": a.status,
+            "payment_status": a.payment_status
+        })
+
+    return render_template('admin/index.html', stats=stats, recent_appointments=formatted_appointments)
+
+
+# تولید خبر هوشمند با GPT
 @admin_bp.route('/generate_news', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def generate_news():
     if request.method == 'POST':
         topic = request.form.get('topic')
-        
         if not topic:
-            flash('لطفا موضوع خبر را وارد کنید', 'error')
+            flash('موضوع الزامی است', 'error')
             return redirect(url_for('admin_bp.generate_news'))
-        
         try:
-            # Generate AI news content
             title, content = generate_beauty_news(topic)
-            
-            # Create news article
-            news = News(
-                title=title,
-                content=content,
-                is_published=True,
-                is_ai_generated=True
-            )
-            
-            db.session.add(news)
+            db.session.add(News(title=title, content=content, is_published=True, is_ai_generated=True))
             db.session.commit()
-            
-            flash('خبر با موفقیت تولید و منتشر شد', 'success')
-            return redirect(url_for('admin.newsmodeview.edit_view', id=news.id))
-        
+            flash('خبر تولید شد', 'success')
+            return redirect(url_for('news_admin.index_view'))
         except Exception as e:
-            flash(f'خطا در تولید محتوا: {str(e)}', 'error')
-    
+            flash(f'خطا: {e}', 'error')
+
     return render_template('admin/generate_news.html')
 
+
+# تولید چند خبر به‌صورت هم‌زمان
 @admin_bp.route('/generate_multiple_news', methods=['POST'])
 @login_required
 @admin_required
 def generate_multiple_news():
-    """Generate multiple AI-generated beauty articles"""
-    beauty_topics = [
-        "مراقبت از پوست در فصل تابستان",
-        "اهمیت استفاده از کرم ضد آفتاب",
-        "روش‌های طبیعی برای روشن کردن پوست",
-        "درمان‌های جدید برای جوان‌سازی پوست",
-        "راهکارهای مقابله با ریزش مو",
-        "فواید ماسک‌های خانگی برای پوست",
-        "تغذیه مناسب برای داشتن پوستی سالم",
-        "مراقبت از پوست خشک در فصل زمستان"
+    topics = [
+        "مراقبت از پوست در تابستان", "کرم ضدآفتاب", "روشن کردن پوست",
+        "جوان‌سازی پوست", "درمان ریزش مو", "ماسک خانگی پوست",
+        "تغذیه و پوست سالم", "مراقبت از پوست خشک"
     ]
-    
-    count = 0
-    errors = 0
-    
-    # Generate articles for each topic
-    for topic in beauty_topics:
+    count, errors = 0, 0
+    for topic in topics:
         try:
-            # Generate content
             title, content = generate_beauty_news(topic)
-            
-            # Check if article with similar title already exists
-            existing = News.query.filter_by(title=title).first()
-            if existing:
+            if News.query.filter_by(title=title).first():
                 continue
-                
-            # Create news article
-            news = News(
-                title=title,
-                content=content,
-                is_published=True,
-                is_ai_generated=True
-            )
-            
-            db.session.add(news)
+            db.session.add(News(title=title, content=content, is_published=True, is_ai_generated=True))
             count += 1
-            
         except Exception as e:
-            print(f"Error generating article for topic {topic}: {str(e)}")
             errors += 1
-    
-    # Commit all articles at once
-    if count > 0:
-        db.session.commit()
-        flash(f'{count} مقاله جدید با موفقیت ایجاد شد', 'success')
-    else:
-        flash('مقاله جدیدی ایجاد نشد', 'warning')
-    
-    if errors > 0:
-        flash(f'در تولید {errors} مقاله خطا رخ داد', 'error')
-    
+    db.session.commit()
+    flash(f"{count} مقاله تولید شد - {errors} خطا", 'success' if count else 'warning')
     return redirect(url_for('admin_bp.index'))

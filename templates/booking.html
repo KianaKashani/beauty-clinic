@@ -135,13 +135,19 @@
                         <h4 class="mb-4">انتخاب خدمت</h4>
                         <div class="mb-4">
                             <label for="service" class="form-label">خدمت مورد نظر را انتخاب کنید</label>
-                            <select class="form-select" id="service" name="service_id" required>
-                                <option value="">انتخاب خدمت</option>
-                                {% for service in services %}
-                                <option value="{{ service.id }}" data-price="{{ service.price }}">{{ service.name }} ({{ "{:,}".format(service.price) }} تومان)</option>
-                                {% endfor %}
-                            </select>
-                            <div class="invalid-feedback">لطفاً یک خدمت را انتخاب کنید</div>
+                            <div class="d-flex justify-content-center">
+                                <div style="width: 100%; max-width: 400px;">
+                                    <select class="form-select" id="service" name="service_id" required>
+                                        <option value="" disabled selected>انتخاب خدمت</option>
+                                        {% for service in services %}
+                                        <option value="{{ service.id }}" data-price="{{ service.price }}">
+                                            {{ service.name }} ({{ "{:,}".format(service.price) }} تومان)
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="invalid-feedback">لطفاً یک خدمت را انتخاب کنید</div>
+                                </div>
+                            </div>
                         </div>
                         
                         <div id="serviceDescription" class="mb-4 p-3 bg-light rounded d-none">
@@ -166,15 +172,27 @@
                     
                     <!-- Step 2: Doctor Selection -->
                     <div class="step-content" data-step="2">
-                        <h4 class="mb-4">انتخاب پزشک</h4>
-                        <div class="mb-4">
-                            <label for="doctor" class="form-label">پزشک مورد نظر را انتخاب کنید</label>
-                            <select class="form-select" id="doctor" name="doctor_id" required disabled>
-                                <option value="">ابتدا خدمت را انتخاب کنید</option>
-                            </select>
-                            <div class="invalid-feedback">لطفاً یک پزشک را انتخاب کنید</div>
-                        </div>
+                        <h4 class="mb-4 text-center">انتخاب پزشک</h4>
                         
+                        <div class="mb-4">
+                            <label for="doctor" class="form-label text-center w-100">پزشک مورد نظر را انتخاب کنید</label>
+                            <div class="d-flex justify-content-center">
+                                <div style="width: 100%; max-width: 400px;">
+                                    <select class="form-select" id="doctor" name="doctor_id" required disabled>
+                                        <option value="">در حال بارگذاری پزشکان...</option>
+                                        {% for doctor in doctors %}
+                                            <option value="{{ doctor.id }}"
+                                                    data-speciality="{{ doctor.title }}"
+                                                    data-bio="{{ (doctor.bio or '')|truncate(100) }}">
+                                                {{ doctor.name }} - {{ doctor.title }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="invalid-feedback">لطفاً یک پزشک را انتخاب کنید</div>
+                                </div>
+                            </div>
+                        </div>
+                    
                         <div id="doctorInfo" class="mb-4 p-3 bg-light rounded d-none">
                             <div class="row">
                                 <div class="col-md-3">
@@ -189,7 +207,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+                    
                         <div class="text-end mt-4">
                             <button type="button" class="btn btn-outline-secondary prev-step me-2" data-current-step="2">
                                 <i class="fas fa-arrow-right me-2"></i> مرحله قبل
@@ -360,172 +378,123 @@
 <script src="{{ url_for('static', filename='js/booking.js') }}"></script>
 <script src="{{ url_for('static', filename='js/booking-steps.js') }}"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Persian datepicker
+    document.addEventListener('DOMContentLoaded', function () {
+        const serviceSelect = document.getElementById('service');
+        const doctorSelect = document.getElementById('doctor');
+        const serviceDescription = document.getElementById('serviceDescription');
+
+        // Persian datepicker
         if ($.fn.persianDatepicker) {
             $('#date').persianDatepicker({
                 format: 'YYYY/MM/DD',
                 minDate: new persianDate().unix(),
-                onSelect: function() {
+                autoClose: true,
+                onSelect: function () {
                     updateAvailableTimes();
                 },
-                autoClose: true,
                 toolbox: {
-                    calendarSwitch: {
-                        enabled: false
-                    }
+                    calendarSwitch: { enabled: false }
                 }
             });
         }
-        
-        // Service selection change
-        const serviceSelect = document.getElementById('service');
-        const serviceDescription = document.getElementById('serviceDescription');
-        
-        serviceSelect.addEventListener('change', function() {
+
+        // وقتی کاربر سرویسی رو انتخاب کرد
+        serviceSelect.addEventListener('change', function () {
             if (this.value) {
-                // Show service details
-                const selectedOption = this.options[this.selectedIndex];
-                const price = selectedOption.getAttribute('data-price');
-                
-                // Get service details via API
-                fetch(`/service/${this.value}`)
-                    .then(response => {
-                        // Mocking service details for now since we don't have a specific API endpoint
-                        return {
-                            name: selectedOption.textContent.split(' (')[0],
-                            description: "توضیحات کامل خدمت انتخاب شده",
-                            price: price,
-                            duration: "60 دقیقه"
-                        };
-                    })
-                    .then(service => {
-                        document.querySelector('.service-name').textContent = service.name;
-                        document.querySelector('.service-desc').textContent = service.description;
-                        document.querySelector('.service-price').textContent = `${new Intl.NumberFormat('fa-IR').format(service.price)} تومان`;
-                        document.querySelector('.service-duration').textContent = service.duration;
-                        
-                        serviceDescription.classList.remove('d-none');
-                    });
-                
-                // Enable doctor selection
-                const doctorSelect = document.getElementById('doctor');
+                // فعال‌سازی انتخاب پزشک
                 doctorSelect.disabled = false;
                 doctorSelect.innerHTML = '<option value="">در حال بارگذاری پزشکان...</option>';
-                
-                // Get doctors for this service
-                setTimeout(() => {
-                    // Simulating API call delay
-                    doctorSelect.innerHTML = '<option value="">انتخاب پزشک</option>';
-                    
-                    // Add doctor options based on selected service
-                    {% for doctor in doctors %}
-                    let doctorOption = document.createElement('option');
-                    doctorOption.value = "{{ doctor.id }}";
-                    doctorOption.textContent = "{{ doctor.name }} - {{ doctor.title }}";
-                    doctorOption.setAttribute('data-speciality', "{{ doctor.title }}");
-                    doctorOption.setAttribute('data-bio', "{{ doctor.bio|truncate(100) }}");
-                    doctorSelect.appendChild(doctorOption);
-                    {% endfor %}
-                }, 500);
+
+                // دریافت اطلاعات پزشکان از سرور
+                fetch(`/get_service_doctors?service_id=${this.value}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        doctorSelect.innerHTML = '<option value="">انتخاب پزشک</option>';
+                        if (data.doctors) {
+                            data.doctors.forEach(doctor => {
+                                const opt = document.createElement('option');
+                                opt.value = doctor.id;
+                                opt.textContent = doctor.name;
+                                doctorSelect.appendChild(opt);
+                            });
+                        }
+                    });
+
+                // نمایش توضیحات خدمت (ساختگی فعلاً)
+                const selectedOption = this.options[this.selectedIndex];
+                const price = selectedOption.getAttribute('data-price') || 0;
+
+                document.querySelector('.service-name').textContent = selectedOption.textContent.split(' (')[0];
+                document.querySelector('.service-desc').textContent = 'توضیحات کامل خدمت انتخاب شده';
+                document.querySelector('.service-price').textContent = `${parseInt(price).toLocaleString('fa-IR')} تومان`;
+                document.querySelector('.service-duration').textContent = '60 دقیقه';
+                serviceDescription.classList.remove('d-none');
             } else {
-                serviceDescription.classList.add('d-none');
-                
-                // Disable doctor selection
-                const doctorSelect = document.getElementById('doctor');
+                // غیرفعال‌سازی
                 doctorSelect.disabled = true;
                 doctorSelect.innerHTML = '<option value="">ابتدا خدمت را انتخاب کنید</option>';
+                serviceDescription.classList.add('d-none');
             }
         });
-        
-        // Doctor selection change
-        const doctorSelect = document.getElementById('doctor');
-        const doctorInfo = document.getElementById('doctorInfo');
-        
-        doctorSelect.addEventListener('change', function() {
-            if (this.value) {
-                // Show doctor details
-                const selectedOption = this.options[this.selectedIndex];
-                const speciality = selectedOption.getAttribute('data-speciality');
-                const bio = selectedOption.getAttribute('data-bio');
-                
-                document.querySelector('.doctor-name').textContent = selectedOption.textContent;
-                document.querySelector('.doctor-speciality').textContent = speciality;
-                document.querySelector('.doctor-bio').textContent = bio;
-                
-                doctorInfo.classList.remove('d-none');
-            } else {
-                doctorInfo.classList.add('d-none');
-            }
-        });
-        
-        // Update summary on step 4
+
+        // وقتی پزشک انتخاب شد نمایش اطلاعات (اگر بخوای اضافه کنی)
+
+        // وقتی به مرحله ۴ رسید برای نمایش خلاصه
         const nextButtons = document.querySelectorAll('.next-step');
         nextButtons.forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 if (this.getAttribute('data-current-step') === '3') {
-                    // Update summary
-                    const serviceSelect = document.getElementById('service');
-                    const doctorSelect = document.getElementById('doctor');
-                    const dateInput = document.getElementById('date');
-                    const timeSelect = document.getElementById('time');
-                    const notesTextarea = document.getElementById('notes');
-                    
-                    document.getElementById('summaryService').textContent = serviceSelect.options[serviceSelect.selectedIndex].textContent.split(' (')[0];
-                    document.getElementById('summaryDoctor').textContent = doctorSelect.options[doctorSelect.selectedIndex].textContent;
-                    document.getElementById('summaryDate').textContent = dateInput.value;
-                    document.getElementById('summaryTime').textContent = timeSelect.value;
-                    document.getElementById('summaryNotes').textContent = notesTextarea.value || '-';
-                    
-                    const price = serviceSelect.options[serviceSelect.selectedIndex].getAttribute('data-price');
-                    document.getElementById('summaryPrice').textContent = `${new Intl.NumberFormat('fa-IR').format(price)} تومان`;
-                    document.getElementById('summaryTotalPrice').textContent = `${new Intl.NumberFormat('fa-IR').format(price)} تومان`;
+                    const summaryService = document.getElementById('summaryService');
+                    const summaryDoctor = document.getElementById('summaryDoctor');
+                    const summaryDate = document.getElementById('summaryDate');
+                    const summaryTime = document.getElementById('summaryTime');
+                    const summaryNotes = document.getElementById('summaryNotes');
+                    const summaryPrice = document.getElementById('summaryPrice');
+                    const summaryTotalPrice = document.getElementById('summaryTotalPrice');
+
+                    const selectedService = serviceSelect.options[serviceSelect.selectedIndex];
+                    const selectedDoctor = doctorSelect.options[doctorSelect.selectedIndex];
+                    const price = selectedService.getAttribute('data-price');
+
+                    summaryService.textContent = selectedService.textContent.split(' (')[0];
+                    summaryDoctor.textContent = selectedDoctor.textContent;
+                    summaryDate.textContent = document.getElementById('date').value;
+                    summaryTime.textContent = document.getElementById('time').value;
+                    summaryNotes.textContent = document.getElementById('notes').value || '-';
+                    summaryPrice.textContent = `${parseInt(price).toLocaleString('fa-IR')} تومان`;
+                    summaryTotalPrice.textContent = `${parseInt(price).toLocaleString('fa-IR')} تومان`;
                 }
             });
         });
-        
-        // Function to update available times
+
+        // آپدیت زمان‌های در دسترس
         function updateAvailableTimes() {
-            const serviceId = document.getElementById('service').value;
-            const doctorId = document.getElementById('doctor').value;
             const date = document.getElementById('date').value;
             const timeSelect = document.getElementById('time');
-            
+            const serviceId = serviceSelect.value;
+            const doctorId = doctorSelect.value;
+
             if (serviceId && doctorId && date) {
-                // Enable time selection
                 timeSelect.disabled = false;
-                timeSelect.innerHTML = '<option value="">در حال بارگذاری زمان‌ها...</option>';
-                
-                // Get available times from API
+                timeSelect.innerHTML = '<option value="">در حال بارگذاری...</option>';
+
                 fetch(`/get_available_times?service_id=${serviceId}&doctor_id=${doctorId}&date=${date}`)
-                    .then(response => response.json())
+                    .then(res => res.json())
                     .then(data => {
-                        if (data.error) {
-                            console.error('Error:', data.error);
-                            timeSelect.innerHTML = '<option value="">خطا در بارگذاری زمان‌ها</option>';
-                            return;
-                        }
-                        
                         timeSelect.innerHTML = '<option value="">انتخاب زمان</option>';
-                        
                         if (data.available_times && data.available_times.length > 0) {
-                            data.available_times.forEach(time => {
-                                const option = document.createElement('option');
-                                option.value = time;
-                                option.textContent = time;
-                                timeSelect.appendChild(option);
+                            data.available_times.forEach(t => {
+                                const opt = document.createElement('option');
+                                opt.value = t;
+                                opt.textContent = t;
+                                timeSelect.appendChild(opt);
                             });
                         } else {
-                            timeSelect.innerHTML = '<option value="">زمان خالی برای این تاریخ وجود ندارد</option>';
+                            timeSelect.innerHTML = '<option value="">زمان خالی وجود ندارد</option>';
                             timeSelect.disabled = true;
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        timeSelect.innerHTML = '<option value="">خطا در بارگذاری زمان‌ها</option>';
                     });
             } else {
-                // Disable time selection
                 timeSelect.disabled = true;
                 timeSelect.innerHTML = '<option value="">ابتدا خدمت، پزشک و تاریخ را انتخاب کنید</option>';
             }

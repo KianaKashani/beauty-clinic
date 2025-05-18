@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get elements
     const serviceSelect = document.getElementById('service');
     const doctorSelect = document.getElementById('doctor');
+    doctorSelect.disabled = false;
     const dateInput = document.getElementById('date');
     const timeSelect = document.getElementById('time');
     
@@ -56,12 +57,11 @@ document.addEventListener('DOMContentLoaded', function() {
         doctorSelect.innerHTML = '<option value="">در حال بارگذاری...</option>';
         
         // Fetch doctors who provide this service
-        fetch(`/get_service_doctors?service_id=${serviceId}`)
-            .then(response => response.json())
+        ffetch(`/get_service_doctors?service_id=${serviceId}`)
+            .then(res => res.json())
             .then(data => {
-                // Clear current options
-                doctorSelect.innerHTML = '<option value="">انتخاب پزشک</option>';
-                
+            doctorSelect.innerHTML = '<option value="">انتخاب پزشک</option>';
+         
                 // Add new options
                 if (data.doctors && data.doctors.length > 0) {
                     data.doctors.forEach(doctor => {

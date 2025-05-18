@@ -1,4 +1,4 @@
-from app import app, db
+from extensions import db
 from models import User, UserRole
 
 with app.app_context():

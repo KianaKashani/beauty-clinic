@@ -1,4 +1,5 @@
-from app import app, db  # noqa: F401
+from app import app
+from extensions import db
 from models import User, Doctor, Service, UserRole
 import os
 from werkzeug.security import generate_password_hash

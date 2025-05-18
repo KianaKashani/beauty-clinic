@@ -1,0 +1,19 @@
+from extensions import db
+from models import User, UserRole
+from werkzeug.security import generate_password_hash
+from app import create_app
+
+app = create_app()
+
+with app.app_context():
+    admin_user = User(
+        username='admin',
+        email='admin@example.com',
+        phone='09123456789',
+        role=UserRole.ADMIN,
+        is_active=True,
+    )
+    admin_user.set_password('admin123')  
+    db.session.add(admin_user)
+    db.session.commit()
+    print("ادمین ساخته شد.")
