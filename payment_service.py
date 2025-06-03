@@ -1,9 +1,11 @@
 import os
 import requests
 from config import Config
+from dotenv import load_dotenv
 
+load_dotenv()
 # ZarinPal configuration
-MERCHANT_ID = os.environ.get("ZARINPAL_MERCHANT_ID")
+MERCHANT_ID = os.getenv("ZARINPAL_MERCHANT_ID")
 ZARINPAL_REQUEST_URL = "https://api.zarinpal.com/pg/v4/payment/request.json"
 ZARINPAL_VERIFY_URL = "https://api.zarinpal.com/pg/v4/payment/verify.json"
 ZARINPAL_START_PAY_URL = "https://www.zarinpal.com/pg/StartPay/{}"

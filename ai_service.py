@@ -1,15 +1,13 @@
-import json
+from dotenv import load_dotenv
 import os
 from openai import OpenAI
 
-OPENAI_API_KEY = "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"
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 openai = OpenAI(api_key=OPENAI_API_KEY)
 
 def get_ai_consultation(question):
-    """
-    Get AI consultation response for beauty and medical questions
-    """
     try:
         response = openai.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -26,13 +24,9 @@ def get_ai_consultation(question):
         return "متأسفانه در حال حاضر امکان پاسخگویی به سوال شما وجود ندارد. لطفاً دوباره تلاش کنید."
     
 def generate_beauty_news(topic):
-    """
-    Generate a news article using OpenAI about a given beauty or medical topic.
-    Returns a tuple (title, content)
-    """
     try:
         response = openai.chat.completions.create(
-            model="gpt-3.5-turbo",  
+            model="gpt-3.5",  
             messages=[
                 {
                     "role": "system",

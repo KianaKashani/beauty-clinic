@@ -1,9 +1,12 @@
 import os
 import requests
 from config import Config
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Kavenegar SMS API key
-KAVENEGAR_API_KEY = os.environ.get("KAVENEGAR_API_KEY")
+KAVENEGAR_API_KEY = os.getenv("KAVENEGAR_API_KEY")
 KAVENEGAR_URL = "https://api.kavenegar.com/v1/{}/sms/send.json".format(KAVENEGAR_API_KEY)
 
 def send_sms(receptor, message):

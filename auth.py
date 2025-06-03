@@ -22,7 +22,7 @@ GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configura
 # Setup Google OAuth client
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
-DEV_REDIRECT_URL = "http://localhost:5001/google_login/callback"
+DEV_REDIRECT_URL = "http://localhost:5001/auth/google_login/callback"
 
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -288,9 +288,7 @@ def google_login():
     # Prepare request URI for Google login
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
-        # Replacing http:// with https:// is important as the external
-        # protocol must be https to match the URI whitelisted
-        redirect_uri=request.base_url + "/callback",
+        redirect_uri=DEV_REDIRECT_URL,
         scope=["openid", "email", "profile"],
     )
     
@@ -312,7 +310,7 @@ def google_callback():
         # Replacing http:// with https:// is important as the external
         # protocol must be https to match the URI whitelisted
         authorization_response=request.url,
-        redirect_url=request.base_url,
+        redirect_uri=DEV_REDIRECT_URL,
         code=code
     )
     

@@ -1,8 +1,8 @@
 from flask import Flask
 from flask_login import LoginManager
 from extensions import db, admin
-from routes import main  # Blueprint اصلی
-from models import User  # مهم: برای login و ساخت جداول
+from routes import main  
+from models import User  
 from auth import auth as auth_blueprint
 from datetime import datetime
 from admin import admin_bp

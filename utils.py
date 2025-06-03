@@ -52,7 +52,7 @@ def generate_unique_code(length=6):
 
 def validate_phone_number(phone):
     """Validate Iranian phone number format"""
-    # Iranian mobile number format: +98XXXXXXXXXX or 09XXXXXXXXXX
+    # number format: +98XXXXXXXXXX or 09XXXXXXXXXX
     # Also accepting the 9XXXXXXXXX format from the form
     pattern = r'^(\+98|0)?9\d{9}$'
     return bool(re.match(pattern, phone))

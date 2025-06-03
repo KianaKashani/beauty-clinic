@@ -113,17 +113,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Clear current options
                 timeSelect.innerHTML = '<option value="">انتخاب زمان</option>';
                 
-                // Add new options
+                const now = new Date();
+                const selectedDate = new Date(date); // تاریخ انتخاب شده
+            
                 if (data.available_times && data.available_times.length > 0) {
                     data.available_times.forEach(time => {
-                        const option = document.createElement('option');
-                        option.value = time;
-                        option.textContent = time;
-                        timeSelect.appendChild(option);
+                        // ساختن یک شی Date برای هر زمان برای مقایسه
+                        const [hours, minutes] = time.split(':').map(Number);
+                        const timeDate = new Date(selectedDate);
+                        timeDate.setHours(hours, minutes, 0, 0);
+            
+                        // فقط زمان‌هایی که بزرگتر یا مساوی الان هستن
+                        if (timeDate >= now) {
+                            const option = document.createElement('option');
+                            option.value = time;
+                            option.textContent = time;
+                            timeSelect.appendChild(option);
+                        }
                     });
                     
-                    // Enable select
-                    timeSelect.disabled = false;
+                    // اگه هیچ گزینه‌ای اضافه نشد، پیام بده
+                    if (timeSelect.options.length === 1) { // فقط گزینه پیش‌فرض هست
+                        timeSelect.innerHTML = '<option value="">زمان خالی برای این تاریخ وجود ندارد</option>';
+                        timeSelect.disabled = true;
+                    } else {
+                        timeSelect.disabled = false;
+                    }
                 } else {
                     timeSelect.innerHTML = '<option value="">زمان خالی برای این تاریخ وجود ندارد</option>';
                     timeSelect.disabled = true;

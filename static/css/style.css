@@ -16,9 +16,8 @@
     font-style: normal;
 }
 
-/* Basic styling */
 :root {
-    --primary-color: #ad8fd9; /* Light purple */
+    --primary-color: #ad8fd9; 
     --primary-light: #d5c4f1;
     --primary-dark: #8e6db5;
     --white: #ffffff;

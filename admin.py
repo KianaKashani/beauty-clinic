@@ -4,11 +4,12 @@ from extensions import db, admin
 from models import User, Doctor, Service, Appointment, Review, Portfolio, News
 from utils import shamsi_to_gregorian, format_shamsi_date
 from flask_admin.contrib.sqla import ModelView
-from wtforms import TextAreaField, SelectField
-from ai_service import generate_beauty_news
-from datetime import date, time, datetime, timezone
+from wtforms import TextAreaField, SelectField, PasswordField
+from flask_admin.form import Select2Widget
+from wtforms_sqlalchemy.fields import QuerySelectMultipleField
 from functools import wraps
-
+from datetime import date
+from wtforms_sqlalchemy.fields import QuerySelectField
 
 admin_bp = Blueprint('admin_bp', __name__, url_prefix='/admin')
 
@@ -33,7 +34,7 @@ class AdminRequiredMixin:
     def is_accessible(self):
         try:
             return current_user.is_authenticated and current_user.is_admin()
-        except Exception as e:
+        except Exception:
             return False
 
     def inaccessible_callback(self, name, **kwargs):
@@ -42,67 +43,138 @@ class AdminRequiredMixin:
 
 
 # ویوهای ادمین
+
 class UserModelView(AdminRequiredMixin, ModelView):
     column_list = ('username', 'email', 'phone', 'role', 'created_at', 'last_login')
     form_columns = ('username', 'email', 'phone', 'role', 'is_active')
 
+    form_overrides = {
+        'role': SelectField,
+    }
+
+    form_extra_fields = {
+        'password': PasswordField('Password')
+    }
+
+    form_args = {
+        'role': {
+            'choices': [
+                ('admin', 'ادمین'),
+                ('doctor', 'پزشک'),
+                ('patient', 'بیمار')
+            ]
+        }
+    }
+
+    def on_model_change(self, form, model, is_created):
+        if form.password.data:
+            model.set_password(form.password.data)
+
 
 class DoctorModelView(AdminRequiredMixin, ModelView):
-    form_overrides = {'bio': TextAreaField}
+    form_overrides = {
+        'bio': TextAreaField,
+        'services': QuerySelectMultipleField
+    }
     form_columns = ('name', 'title', 'bio', 'image_url', 'experience_years', 'education', 'certifications', 'services')
+    form_args = {
+        'services': {
+            'query_factory': lambda: Service.query.all(),
+            'widget': Select2Widget(multiple=True),
+            'get_label': 'name'
+        }
+    }
 
 
 class ServiceModelView(AdminRequiredMixin, ModelView):
     form_overrides = {
         'description': TextAreaField,
-        'short_description': TextAreaField
+        'short_description': TextAreaField,
+        'doctors': QuerySelectMultipleField
+    }
+    form_args = {
+        'doctors': {
+            'query_factory': lambda: Doctor.query.all(),
+            'widget': Select2Widget(multiple=True),
+            'get_label': 'name'
+        }
     }
     form_columns = ('name', 'description', 'short_description', 'price', 'duration', 'image_url', 'doctors')
 
 
 class AppointmentModelView(AdminRequiredMixin, ModelView):
     form_overrides = {
-        'notes': TextAreaField
+        'notes': TextAreaField,
+        'user': QuerySelectField,
+        'doctor': QuerySelectField,
+        'service': QuerySelectField,
+        'status': SelectField,
+        'payment_status': SelectField
     }
 
-    form_choices = {
-        'status': [
-            ('pending', 'در انتظار'),
-            ('confirmed', 'تایید شده'),
-            ('canceled', 'لغو شده'),
-            ('completed', 'انجام شده')
-        ],
-        'payment_status': [
-            ('pending', 'در انتظار پرداخت'),
-            ('paid', 'پرداخت شده')
-        ]
+    form_args = {
+        'user': {
+            'query_factory': lambda: User.query.all(),
+            'get_label': 'username'
+        },
+        'doctor': {
+            'query_factory': lambda: Doctor.query.all(),
+            'get_label': 'name'
+        },
+        'service': {
+            'query_factory': lambda: Service.query.all(),
+            'get_label': 'name'
+        },
+        'status': {
+            'choices': [
+                ('pending', 'در انتظار'),
+                ('confirmed', 'تایید شده'),
+                ('canceled', 'لغو شده'),
+                ('completed', 'انجام شده')
+            ]
+        },
+        'payment_status': {
+            'choices': [
+                ('pending', 'در انتظار پرداخت'),
+                ('paid', 'پرداخت شده')
+            ]
+        }
     }
 
     form_columns = (
-        'user',
-        'doctor',
-        'service',
-        'date',
-        'time',
-        'status',
-        'payment_status',
-        'notes'
+        'user', 'doctor', 'service', 'date', 'time', 'status', 'payment_status', 'notes'
     )
+        
 
 
 class ReviewModelView(AdminRequiredMixin, ModelView):
-    form_overrides = {'comment': TextAreaField}
+    form_overrides = {'comment': TextAreaField, 'user': QuerySelectField, 'service': QuerySelectField}
+    form_args = {
+        'user': {
+            'query_factory': lambda: User.query.all(),
+            'get_label': 'username'
+        },
+        'service': {
+            'query_factory': lambda: Service.query.all(),
+            'get_label': 'name'
+        }
+    }
     form_columns = ('user', 'service', 'rating', 'comment', 'is_approved')
 
-
 class PortfolioModelView(AdminRequiredMixin, ModelView):
-    form_overrides = {'description': TextAreaField}
+    form_overrides = {'description': TextAreaField, 'service': QuerySelectField}
+    form_args = {
+        'service': {
+            'query_factory': lambda: Service.query.all(),
+            'get_label': 'name'
+        }
+    }
     form_columns = ('service', 'title', 'description', 'before_image_url', 'after_image_url', 'is_featured')
-
 
 class NewsModelView(AdminRequiredMixin, ModelView):
     form_overrides = {'content': TextAreaField}
     form_columns = ('title', 'content', 'image_url', 'is_published', 'is_ai_generated')
+
 
 # ثبت ویوها در پنل ادمین
 admin.add_view(UserModelView(User, db.session, name='کاربران', endpoint='users_admin'))
@@ -189,3 +261,4 @@ def generate_multiple_news():
     db.session.commit()
     flash(f"{count} مقاله تولید شد - {errors} خطا", 'success' if count else 'warning')
     return redirect(url_for('admin_bp.index'))
+
