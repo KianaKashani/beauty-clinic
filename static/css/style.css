@@ -114,9 +114,22 @@ a:hover {
     width: 80%;
     left: 10%;
 }
+/* داخل فایل style.css */
 .navbar-logo {
-    max-width: 125px; /* می‌توانید سایز مورد نظر خود را تغییر دهید */
+    width: 10%;
     height: auto;
+}
+
+@media (max-width: 768px) {
+    .logo {
+        width: 20%;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo {
+        width: 30%;
+    }
 }
 
 /* Hero section */
