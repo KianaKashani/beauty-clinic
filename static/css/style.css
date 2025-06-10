@@ -114,6 +114,10 @@ a:hover {
     width: 80%;
     left: 10%;
 }
+.navbar-logo {
+    max-width: 125px; /* می‌توانید سایز مورد نظر خود را تغییر دهید */
+    height: auto;
+}
 
 /* Hero section */
 .hero {

@@ -22,7 +22,7 @@ GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configura
 # Setup Google OAuth client
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
-DEV_REDIRECT_URL = "http://localhost:5001/auth/google_login/callback"
+DEV_REDIRECT_URL = "https://faribaclinic.com/auth/google_login/callback"
 
 
 @auth.route('/login', methods=['GET', 'POST'])

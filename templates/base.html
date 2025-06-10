@@ -26,8 +26,9 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light sticky-top">
         <div class="container">
+            <img src="{{ url_for('static', filename='images/first.png') }}" alt="Logo" class="navbar-logo">
             <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <span class="text-primary">مرکز</span> زیبایی
+                <span class="text-primary">مرکز زیبایی</span> فریبا رضائی
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -130,17 +131,11 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-4 mb-4">
-                    <h4 class="footer-heading">درباره کلینیک</h4>
-                    <p>کلینیک زیبایی ما با بهره‌گیری از پیشرفته‌ترین تجهیزات و کادر مجرب، خدمات متنوعی در زمینه زیبایی پوست و مو ارائه می‌دهد.</p>
+                    <h4 class="footer-heading">درباره ما</h4>
+                    <p>مرکز زیبایی ما با بهره‌گیری از پیشرفته‌ترین تجهیزات و کادر مجرب، خدمات متنوعی در زمینه زیبایی پوست و مو ارائه می‌دهد.</p>
                     <div class="social-icons">
-                        <a href="https://instagram.com/{{ config.CLINIC_INSTAGRAM }}" class="social-icon" target="_blank">
+                        <a href="https://instagram.com/fariba_clinic" class="social-icon" target="_blank">
                             <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="#" class="social-icon">
-                            <i class="fab fa-telegram"></i>
-                        </a>
-                        <a href="#" class="social-icon">
-                            <i class="fab fa-whatsapp"></i>
                         </a>
                     </div>
                 </div>
@@ -148,22 +143,18 @@
                     <h4 class="footer-heading">تماس با ما</h4>
                     <div class="footer-contact-item">
                         <i class="fas fa-map-marker-alt footer-contact-icon"></i>
-                        <div>{{ config.CLINIC_ADDRESS }}</div>
+                        <div>تهران - میدان اول شهران - مجتمع رویال - طبقه ۳ واحد ۱۴</div>
                     </div>
                     <div class="footer-contact-item">
                         <i class="fas fa-phone footer-contact-icon"></i>
-                        <div>{{ config.CLINIC_PHONE }}</div>
-                    </div>
-                    <div class="footer-contact-item">
-                        <i class="fas fa-envelope footer-contact-icon"></i>
-                        <div>{{ config.ADMIN_EMAIL }}</div>
+                        <a href="tel:+982146108505">۰۲۱-۴۶۱۰۸۵۰۵</a>
                     </div>
                 </div>
                 <div class="col-lg-4 mb-4">
                     <h4 class="footer-heading">ساعات کاری</h4>
                     <div class="footer-contact-item">
                         <i class="fas fa-clock footer-contact-icon"></i>
-                        <div>شنبه تا پنجشنبه: 9 صبح تا 7 عصر</div>
+                        <div>شنبه تا چهارشنبه: ۱۳ تا ۲۰<br>پنجشنبه: ۹ تا ۲۰</div>
                     </div>
                     <div class="footer-contact-item">
                         <i class="fas fa-calendar-times footer-contact-icon"></i>
@@ -177,7 +168,7 @@
         </div>
         <div class="footer-bottom">
             <div class="container">
-                <p>&copy; {{ now.year }} کلینیک زیبایی. تمامی حقوق محفوظ است.</p>
+                <p>&copy; {{ now.year }} تمامی حقوق این سایت برای مرکز زیبایی فریبا رضائی محفوظ است</p>
             </div>
         </div>
     </footer>

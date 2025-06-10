@@ -10,6 +10,8 @@ from wtforms_sqlalchemy.fields import QuerySelectMultipleField
 from functools import wraps
 from datetime import date
 from wtforms_sqlalchemy.fields import QuerySelectField
+from wtforms.validators import Optional
+from wtforms import PasswordField, SelectField
 
 admin_bp = Blueprint('admin_bp', __name__, url_prefix='/admin')
 
@@ -46,14 +48,14 @@ class AdminRequiredMixin:
 
 class UserModelView(AdminRequiredMixin, ModelView):
     column_list = ('username', 'email', 'phone', 'role', 'created_at', 'last_login')
-    form_columns = ('username', 'email', 'phone', 'role', 'is_active')
-
-    form_overrides = {
-        'role': SelectField,
-    }
+    form_columns = ('username', 'email', 'phone', 'role', 'is_active', 'password')
 
     form_extra_fields = {
-        'password': PasswordField('Password')
+        'password': PasswordField('رمز عبور (در صورت تغییر)', validators=[Optional()])
+    }
+
+    form_overrides = {
+        'role': SelectField
     }
 
     form_args = {
@@ -69,6 +71,7 @@ class UserModelView(AdminRequiredMixin, ModelView):
     def on_model_change(self, form, model, is_created):
         if form.password.data:
             model.set_password(form.password.data)
+
 
 
 class DoctorModelView(AdminRequiredMixin, ModelView):
