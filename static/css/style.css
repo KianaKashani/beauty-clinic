@@ -114,21 +114,27 @@ a:hover {
     width: 80%;
     left: 10%;
 }
-/* داخل فایل style.css */
+
+/* استایل برای لوگو در اندازه‌های مختلف صفحه */
 .navbar-logo {
-    width: 10%;
-    height: auto;
+    width: 15vw;  /* 15 درصد از عرض پنجره مرورگر */
+    max-width: 150px;  /* حداکثر عرض 150px */
+    height: auto;  /* حفظ تناسب ابعاد */
 }
 
-@media (max-width: 768px) {
-    .logo {
-        width: 20%;
+/* برای نمایش در دستگاه‌های موبایل */
+@media (max-width: 600px) {
+    .navbar-logo {
+        width: 50%;  /* 50 درصد عرض پنجره */
+        max-width: 100px;  /* حداکثر عرض 100px */
     }
 }
 
-@media (max-width: 480px) {
-    .logo {
-        width: 30%;
+/* برای نمایش در دستگاه‌های تبلت */
+@media (max-width: 1024px) {
+    .navbar-logo {
+        width: 25%;  /* 25 درصد عرض پنجره */
+        max-width: 120px;  /* حداکثر عرض 120px */
     }
 }
 
