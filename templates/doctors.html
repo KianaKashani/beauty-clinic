@@ -52,16 +52,19 @@
                                 <span><strong>گواهینامه‌ها:</strong> {{ doctor.certifications }}</span>
                             </div>
                             {% endif %}
-                        </div>
-                        
-                        <div class="mt-4">
-                            <h6>تخصص‌ها:</h6>
-                            <div class="doctor-services">
+
+                            {% if doctor.services %}
+                            <div class="mt-4">
+                                <h6 class="text-center" style="color: var(--primary-color);">خدمات دکتر</h6>
+                                <div class="d-flex flex-wrap justify-content-center">
                                 {% for service in doctor.services %}
-                                <span class="badge bg-light text-primary me-1 mb-1">{{ service.name }}</span>
+                                    <span class="badge bg-light text-primary me-1 mb-1">{{ service.name }}</span>
                                 {% endfor %}
+                                </div>
                             </div>
+                            {% endif %}
                         </div>
+                    
                     </div>
                     <div class="card-footer text-center">
                         <a href="{{ url_for('main.booking') }}" class="btn btn-primary">
